@@ -9,6 +9,7 @@ interface OMRSheetProps {
   userAnswers?: Record<number, number>;
   onAnswerSelect?: (questionId: number, optionIndex: number) => void;
   isInteractive?: boolean;
+  pageBreakAfter?: boolean;
 }
 
 export const OMRSheet: React.FC<OMRSheetProps> = ({
@@ -17,6 +18,7 @@ export const OMRSheet: React.FC<OMRSheetProps> = ({
   userAnswers = {},
   onAnswerSelect,
   isInteractive = false,
+  pageBreakAfter = false,
 }) => {
   // Dynamically support ANY number of questions:
   // If omrCapacity is 0 (Auto), match exact questions.length (or 50 if empty).
@@ -88,9 +90,9 @@ export const OMRSheet: React.FC<OMRSheetProps> = ({
 
   return (
     <PageBoundaryFrame
-      pageBreakAfter
+      pageBreakAfter={pageBreakAfter}
       showOmrFiducials
-      innerClassName="p-2.5 sm:p-3.5 pb-3.5"
+      innerClassName="p-2.5 sm:p-3 pb-3"
       pageNumberText="PAGE 01 • OMR SHEET"
     >
       {/* ========================================================
@@ -218,16 +220,16 @@ export const OMRSheet: React.FC<OMRSheetProps> = ({
       </div>
 
       {/* ========================================================
-          OMR BUBBLE MATRIX (TIGHT, NO BOTTOM FOOTER SPACE)
+          OMR BUBBLE MATRIX (STRETCHES TO COVER FULL A4 HEIGHT)
       ======================================================== */}
       <div
-        className="grid gap-1.5 sm:gap-2"
+        className="flex-1 grid gap-1.5 sm:gap-2"
         style={{ gridTemplateColumns: `repeat(${columns.length}, minmax(0, 1fr))` }}
       >
         {columns.map((colGroup, colIdx) => (
           <div
             key={colIdx}
-            className="border-[1.5px] border-indigo-950 rounded-xs p-0.5 sm:p-1 bg-white flex flex-col"
+            className="border-[1.5px] border-indigo-950 rounded-xs p-0.5 sm:p-1 bg-white flex flex-col h-full"
           >
             {/* Column Header: Unfilled White Background with Crisp Double Bottom Rule */}
             <div className="shrink-0 grid grid-cols-5 items-center justify-items-center text-center font-black text-[9.5px] py-1 border-b-2 border-indigo-950 text-indigo-950 bg-white">
@@ -238,9 +240,9 @@ export const OMRSheet: React.FC<OMRSheetProps> = ({
               <span className="inline-flex items-center justify-center leading-none text-rose-950">D</span>
             </div>
 
-            {/* Equal-Height Rows inside this column */}
+            {/* Equal-Height Rows inside this column covering full vertical A4 height */}
             <div
-              className="grid divide-y divide-slate-200"
+              className="flex-1 grid divide-y divide-slate-200"
               style={{
                 gridTemplateRows: `repeat(${rowsPerColumn}, minmax(0, 1fr))`,
               }}
@@ -250,7 +252,7 @@ export const OMRSheet: React.FC<OMRSheetProps> = ({
                   return (
                     <div
                       key={`empty-${colIdx}-${rowIdx}`}
-                      className="grid grid-cols-5 items-center justify-items-center py-1 bg-slate-50/30"
+                      className="grid grid-cols-5 items-center justify-items-center bg-slate-50/30"
                     />
                   );
                 }
@@ -264,7 +266,7 @@ export const OMRSheet: React.FC<OMRSheetProps> = ({
                 return (
                   <div
                     key={slot.id}
-                    className={`grid grid-cols-5 items-center justify-items-center text-center py-1 hover:bg-slate-50 transition-colors bg-white ${
+                    className={`grid grid-cols-5 items-center justify-items-center text-center hover:bg-slate-50 transition-colors bg-white ${
                       isFiveGroup ? 'border-b-[1.5px] border-indigo-900' : ''
                     }`}
                   >

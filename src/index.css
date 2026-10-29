@@ -34,21 +34,30 @@
   filter: grayscale(100%) contrast(135%);
 }
 
+/* Full A4 Page Frame Sizing (Screen & Print) */
+.a4-page-frame {
+  min-height: 282mm;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+}
+
 /* Print Specific Rules */
 @media print {
   html, body {
+    width: 210mm !important;
     background: #ffffff !important;
     color: #000000 !important;
     margin: 0 !important;
     padding: 0 !important;
-    font-size: 11pt !important;
+    font-size: 10.5pt !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
 
   .exam-two-columns {
     column-count: 2 !important;
-    column-gap: 1.5rem !important;
+    column-gap: 1.25rem !important;
     column-rule: 1.5px solid #1e1b4b !important;
   }
 
@@ -71,6 +80,23 @@
     transform: none !important;
   }
 
+  .a4-page-outer {
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* Exact A4 Printable Height (297mm - 10mm margins - 3mm badge clearance = 284mm) */
+  .a4-page-frame {
+    width: 100% !important;
+    height: 284mm !important;
+    min-height: 284mm !important;
+    max-height: 284mm !important;
+    box-sizing: border-box !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+
   /* Force exact page breaks */
   .page-break-after {
     page-break-after: always !important;
@@ -82,15 +108,26 @@
     break-before: page !important;
   }
 
+  /* Prevent extra blank page before first or after last printed sheet */
+  .print-container > *:first-child {
+    page-break-before: auto !important;
+    break-before: auto !important;
+  }
+
+  .print-container > *:last-child {
+    page-break-after: auto !important;
+    break-after: auto !important;
+  }
+
   .avoid-break {
     page-break-inside: avoid !important;
     break-inside: avoid !important;
   }
 
-  /* A4 page sizing */
+  /* A4 page sizing with tight 5mm top/bottom margins */
   @page {
     size: A4 portrait;
-    margin: 8mm 8mm 8mm 8mm;
+    margin: 5mm 6mm 5mm 6mm;
   }
 
   /* Remove outer card shadows intended for screen preview while preserving inner page boundary frame */

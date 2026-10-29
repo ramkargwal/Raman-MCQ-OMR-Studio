@@ -416,7 +416,7 @@ export default function App() {
         subject: 'प्राचीन भारतीय इतिहास एवं पुरातत्व',
         testCode: 'BHIM-2026',
         omrCapacity: 0,
-        twoColumnLayout: false,
+        twoColumnLayout: true,
       }));
     } else if (sampleType === 'math') {
       const randomized = randomizeQuestionsAndOptions(
@@ -543,7 +543,7 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] flex flex-col text-slate-800 selection:bg-blue-100 selection:text-blue-900">
+    <div className="min-h-screen print:min-h-0 bg-[#F8FAFC] print:bg-white flex flex-col text-slate-800 selection:bg-blue-100 selection:text-blue-900">
       {/* ========================================================
           SINGLE MINIMAL TOP NAVIGATION BAR (NO-PRINT)
       ======================================================== */}
@@ -878,7 +878,7 @@ export default function App() {
           MAIN WORKSPACE (TOP INPUT BOX + BOTTOM DOCUMENT PREVIEW)
           Both share the exact same max-w-5xl w-full width!
       ======================================================== */}
-      <div className="max-w-5xl w-full mx-auto p-4 sm:p-6 flex-1 flex flex-col">
+      <div className="max-w-5xl print:max-w-none w-full mx-auto p-4 sm:p-6 print:p-0 print:m-0 flex-1 flex flex-col">
         {/* Practice Mode Scoreboard Banner */}
         {activeTab === 'practice' && (
           <div className="no-print mb-4 bg-gradient-to-r from-purple-900 to-indigo-900 text-white rounded-xl p-4 shadow-lg flex flex-wrap items-center justify-between gap-4">
@@ -921,7 +921,7 @@ export default function App() {
           </div>
         )}
 
-        <div className="flex flex-col gap-5 w-full">
+        <div className="flex flex-col gap-5 print:gap-0 w-full">
           {/* ----------------------------------------------------
               TOP PANEL: MINIMAL QUIZ INPUT DATA BOX (NO-PRINT)
               (Icon-only actions + White background textarea)
@@ -1123,6 +1123,10 @@ export default function App() {
                       userAnswers={userAnswers}
                       onAnswerSelect={handleAnswerSelect}
                       isInteractive={activeTab === 'practice'}
+                      pageBreakAfter={
+                        (showPaperSection && questions.length > 0) ||
+                        (showKeySection && questions.length > 0)
+                      }
                     />
                   </div>
                 )}
@@ -1134,6 +1138,7 @@ export default function App() {
                       metadata={metadata}
                       questions={questions}
                       onEditQuestion={(qId) => handleOpenQuestionEditor(qId)}
+                      pageBreakAfterLast={showKeySection && questions.length > 0}
                     />
                   </div>
                 )}

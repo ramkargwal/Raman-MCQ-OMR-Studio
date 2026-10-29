@@ -105,7 +105,7 @@ export const PageBoundaryFrame: React.FC<PageBoundaryFrameProps> = ({
 }) => {
   return (
     <div
-      className={`relative bg-white text-slate-950 w-full mx-auto p-2.5 sm:p-4 border border-slate-300 rounded-xl print:rounded-none screen-only-shadow print:border-none print:p-0 box-border leading-tight ${
+      className={`a4-page-outer relative bg-white text-slate-950 w-full mx-auto p-2.5 sm:p-4 border border-slate-300 rounded-xl print:rounded-none screen-only-shadow print:border-none print:p-0 box-border leading-tight flex flex-col ${
         pageBreakAfter ? 'page-break-after' : ''
       } ${pageBreakBefore ? 'page-break-before' : ''}`}
     >
@@ -133,9 +133,9 @@ export const PageBoundaryFrame: React.FC<PageBoundaryFrameProps> = ({
 
       {/* ====================================================================
           AESTHETIC TRIPLE-LINE ARCHITECTURAL PAGE BOUNDARY
-          Hugs page content tightly with zero empty gap at the bottom
+          Locked to full A4 portrait height (284mm) so there is zero empty bottom space
       ==================================================================== */}
-      <div className="page-frame-clone relative z-10 border-[2.5px] border-indigo-950 p-[3.5px] rounded-xs bg-white shadow-[inset_0_0_0_1px_rgba(30,27,75,0.12)]">
+      <div className="a4-page-frame page-frame-clone relative z-10 border-[2.5px] border-indigo-950 p-[3.5px] rounded-xs bg-white shadow-[inset_0_0_0_1px_rgba(30,27,75,0.12)] flex-1 flex flex-col">
         {/* 4 Ornamental Corner Medallions */}
         <CornerOrnament className="absolute -top-[2px] -left-[2px] z-20" />
         <CornerOrnament className="absolute -top-[2px] -right-[2px] rotate-90 z-20" />
@@ -164,7 +164,7 @@ export const PageBoundaryFrame: React.FC<PageBoundaryFrameProps> = ({
 
         {/* Inner Fine Hairline Border Frame */}
         <div
-          className={`page-frame-clone relative border-[1.25px] border-indigo-900 bg-white ${innerClassName}`}
+          className={`page-frame-clone relative border-[1.25px] border-indigo-900 bg-white flex-1 flex flex-col ${innerClassName}`}
         >
           {children}
         </div>

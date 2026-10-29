@@ -51,16 +51,15 @@ export const AnswerKey: React.FC<AnswerKeyProps> = ({ metadata, questions }) => 
 
   return (
     <PageBoundaryFrame
-      pageBreakBefore
-      innerClassName="p-2.5 sm:p-3.5 pb-3.5"
+      innerClassName="p-2.5 sm:p-3 pb-3"
       pageNumberText="FINAL PAGE • ANSWER KEY"
     >
-      <div>
+      <div className="flex-1 flex flex-col h-full">
         {/* ========================================================
             PRESTIGE HEADER WITH UNIVERSITY CREST
             (DEEP INK OUTLINES, ZERO DARK FILL, STRICTLY CENTER ALIGNED)
         ======================================================== */}
-        <div className="text-center pb-2 border-b-2 border-indigo-950 mb-2">
+        <div className="text-center pb-2 border-b-2 border-indigo-950 mb-2 shrink-0">
           <div className="grid grid-cols-3 items-center justify-items-center text-center text-[10px] font-bold text-indigo-950 mb-1">
             <div className="flex items-center justify-center">
               <span className="inline-flex items-center justify-center font-mono border-[1.5px] border-blue-900 text-blue-950 bg-white px-2 py-0.5 rounded-xs font-extrabold text-[9px] uppercase leading-none tabular-nums">
@@ -104,7 +103,7 @@ export const AnswerKey: React.FC<AnswerKeyProps> = ({ metadata, questions }) => 
         {/* ========================================================
             SCORING SCHEME & UNIFORM DISTRIBUTION STRIP (ALL CENTER ALIGNED)
         ======================================================== */}
-        <div className="grid grid-cols-2 sm:grid-cols-5 gap-1.5 mb-2 text-[10px] text-center tabular-nums">
+        <div className="grid grid-cols-2 sm:grid-cols-5 gap-1.5 mb-2 text-[10px] text-center tabular-nums shrink-0">
           <div className="border-[1.5px] border-indigo-900 p-1 rounded-xs flex flex-col items-center justify-center text-center bg-white">
             <span className="text-indigo-950 block text-[8.5px] uppercase font-extrabold">Total Questions</span>
             <span className="text-sm font-black text-indigo-950">{questions.length}</span>
@@ -141,19 +140,19 @@ export const AnswerKey: React.FC<AnswerKeyProps> = ({ metadata, questions }) => 
 
         {/* ========================================================
             ANSWER KEY MATRIX: CLEAN BOLD LETTERS (NO CIRCLES)
-            (Strictly Center Aligned Q. NO. and KEY on the Same Line)
+            Stretches vertically (flex-1) to fill full A4 page height!
         ======================================================== */}
         <div
-          className="grid gap-1.5 sm:gap-2"
+          className="flex-1 grid gap-1.5 sm:gap-2"
           style={{ gridTemplateColumns: `repeat(${columns.length}, minmax(0, 1fr))` }}
         >
           {columns.map((colGroup, colIdx) => (
             <div
               key={colIdx}
-              className="border-[1.5px] border-indigo-950 rounded-xs overflow-hidden bg-white"
+              className="border-[1.5px] border-indigo-950 rounded-xs overflow-hidden bg-white flex flex-col h-full"
             >
               {/* Column Header: Unfilled White Background with Crisp Double Bottom Rule */}
-              <div className="grid grid-cols-2 items-center justify-items-center text-center font-black text-[9.5px] py-1 bg-white text-indigo-950 tracking-wider border-b-2 border-indigo-950">
+              <div className="shrink-0 grid grid-cols-2 items-center justify-items-center text-center font-black text-[9.5px] py-1 bg-white text-indigo-950 tracking-wider border-b-2 border-indigo-950">
                 <span className="w-full border-r border-indigo-300 inline-flex items-center justify-center leading-none">
                   Q. NO.
                 </span>
@@ -162,28 +161,43 @@ export const AnswerKey: React.FC<AnswerKeyProps> = ({ metadata, questions }) => 
                 </span>
               </div>
 
-              {/* Rows inside column */}
-              <div className="divide-y divide-slate-300">
-                {colGroup.map((q, rowIdx) => {
+              {/* Equal-Height Rows inside column covering full vertical A4 space */}
+              <div
+                className="flex-1 grid divide-y divide-slate-300"
+                style={{
+                  gridTemplateRows: `repeat(${rowsPerColumn}, minmax(0, 1fr))`,
+                }}
+              >
+                {Array.from({ length: rowsPerColumn }).map((_, rowIdx) => {
+                  const q = colGroup[rowIdx];
+                  if (!q) {
+                    return (
+                      <div
+                        key={`empty-ans-${colIdx}-${rowIdx}`}
+                        className="grid grid-cols-2 items-center justify-items-center bg-slate-50/30"
+                      />
+                    );
+                  }
+
                   const correctLetter = optionLetters[q.a] || 'A';
                   const textStyle = optionTextStyles[correctLetter] || 'text-indigo-950';
-                  const isFiveGroup = q.id % 5 === 0 && rowIdx !== colGroup.length - 1;
+                  const isFiveGroup = q.id % 5 === 0 && rowIdx !== rowsPerColumn - 1;
 
                   return (
                     <div
                       key={q.id}
-                      className={`grid grid-cols-2 items-center justify-items-center text-center py-[2.5px] sm:py-[3px] px-1 hover:bg-slate-50 transition-colors bg-white ${
+                      className={`grid grid-cols-2 items-center justify-items-center text-center px-1 hover:bg-slate-50 transition-colors bg-white ${
                         isFiveGroup ? 'border-b-2 border-indigo-900' : ''
                       }`}
                     >
                       {/* Question Number: Tabular Numerals, Strictly centered on same line */}
-                      <span className="w-full border-r border-slate-200 inline-flex items-center justify-center h-4.5 text-[10.5px] font-bold font-mono tabular-nums text-center text-slate-900 leading-none">
+                      <span className="w-full h-full border-r border-slate-200 inline-flex items-center justify-center text-[10.5px] font-bold font-mono tabular-nums text-center text-slate-900 leading-none">
                         {String(q.id).padStart(2, '0')}
                       </span>
 
                       {/* Answer Key Letter: Clean Bold Text (NO Circle), Strictly Centered */}
                       <span
-                        className={`w-full inline-flex items-center justify-center h-4.5 text-[11px] sm:text-xs font-black font-mono text-center leading-none ${textStyle}`}
+                        className={`w-full h-full inline-flex items-center justify-center text-[11px] sm:text-xs font-black font-mono text-center leading-none ${textStyle}`}
                       >
                         {correctLetter}
                       </span>
