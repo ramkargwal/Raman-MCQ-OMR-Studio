@@ -195,17 +195,55 @@ export const SettingsDrawer: React.FC<SettingsDrawerProps> = ({
               />
             </div>
 
-            <div>
-              <label className="block font-semibold mb-1">OMR Sheet Bubble Capacity</label>
-              <select
-                value={metadata.omrCapacity || 100}
-                onChange={(e) => updateField('omrCapacity', Number(e.target.value))}
-                className="w-full px-3 py-1.5 border border-slate-300 rounded focus:ring-2 focus:ring-blue-500 focus:outline-hidden font-medium"
-              >
-                <option value={100}>100 Questions (5 Columns of 20 - Standard Format)</option>
-                <option value={50}>50 Questions (3 Columns)</option>
-                <option value={20}>20 Questions (2 Columns)</option>
-              </select>
+            <div className="p-2.5 bg-slate-50 rounded border border-slate-200 space-y-2">
+              <div className="flex items-center justify-between">
+                <label className="block font-semibold text-slate-800">
+                  OMR Sheet Question Capacity
+                </label>
+                <span className="text-[10px] font-mono font-bold text-blue-700 bg-blue-50 border border-blue-200 px-1.5 py-0.5 rounded">
+                  {metadata.omrCapacity === 0
+                    ? 'Auto (Matches Questions)'
+                    : `${metadata.omrCapacity} Questions`}
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <input
+                  type="number"
+                  min={0}
+                  max={250}
+                  value={metadata.omrCapacity || 0}
+                  onChange={(e) =>
+                    updateField('omrCapacity', Math.max(0, Number(e.target.value) || 0))
+                  }
+                  placeholder="0 = Auto"
+                  className="w-24 px-2.5 py-1.5 border border-slate-300 rounded bg-white text-xs font-mono focus:ring-2 focus:ring-blue-500 focus:outline-hidden"
+                />
+                <div className="flex flex-wrap gap-1 flex-1">
+                  {[
+                    { label: 'Auto', val: 0 },
+                    { label: '20', val: 20 },
+                    { label: '50', val: 50 },
+                    { label: '100', val: 100 },
+                    { label: '150', val: 150 },
+                  ].map((preset) => (
+                    <button
+                      key={preset.val}
+                      type="button"
+                      onClick={() => updateField('omrCapacity', preset.val)}
+                      className={`px-2 py-1 rounded text-[10px] font-bold border transition cursor-pointer ${
+                        (metadata.omrCapacity || 0) === preset.val
+                          ? 'bg-blue-600 text-white border-blue-600'
+                          : 'bg-white text-slate-600 border-slate-300 hover:bg-slate-100'
+                      }`}
+                    >
+                      {preset.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <p className="text-[10px] text-slate-500">
+                Set to <strong>0 (Auto)</strong> to automatically fit any number of questions, or enter any custom number.
+              </p>
             </div>
 
             <div>

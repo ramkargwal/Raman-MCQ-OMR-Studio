@@ -15,26 +15,30 @@ export const PromptModal: React.FC<PromptModalProps> = ({
   onGenerateAI,
   isGeneratingAI = false,
 }) => {
-  const [topic, setTopic] = useState('भीमबेटका की गुफाएँ');
-  const [questionCount, setQuestionCount] = useState(20);
+  const [topic, setTopic] = useState('');
+  const [questionCount, setQuestionCount] = useState(50);
   const [language, setLanguage] = useState<
     'Hindi' | 'Hinglish' | 'English' | 'Bilingual (Hindi + English)'
-  >('Hindi');
+  >('Hinglish');
   const [difficulty, setDifficulty] = useState('Medium');
   const [additionalNotes, setAdditionalNotes] = useState('');
+  const [customPrompt, setCustomPrompt] = useState('');
   const [copied, setCopied] = useState(false);
 
   if (!isOpen) return null;
 
-  const currentPrompt = buildPromptText(
-    topic,
-    questionCount,
-    language,
-    difficulty,
-    additionalNotes
-  );
+  const currentPrompt = topic.trim()
+    ? buildPromptText(
+        topic.trim(),
+        questionCount,
+        language,
+        difficulty,
+        additionalNotes
+      )
+    : customPrompt;
 
   const handleCopy = async () => {
+    if (!currentPrompt.trim()) return;
     try {
       await navigator.clipboard.writeText(currentPrompt);
       setCopied(true);
@@ -66,13 +70,13 @@ export const PromptModal: React.FC<PromptModalProps> = ({
                 AI MCQ Prompt Generator
               </h3>
               <p className="text-xs text-slate-500">
-                Copy this prompt into ChatGPT, Gemini, Claude, or generate directly
+                Enter your topic below to generate a ready-to-copy prompt
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-200 transition-colors"
+            className="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-200 transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
@@ -82,9 +86,24 @@ export const PromptModal: React.FC<PromptModalProps> = ({
         <div className="flex-1 overflow-y-auto p-6 space-y-4 text-sm text-slate-700">
           {/* Controls to Customize Prompt */}
           <div className="bg-blue-50/50 border border-blue-100 rounded-lg p-4 space-y-3">
-            <div className="flex items-center gap-1.5 text-xs font-bold text-blue-900 uppercase tracking-wide">
-              <Sliders className="w-3.5 h-3.5 text-blue-600" />
-              Customize Prompt Parameters
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-1.5 text-xs font-bold text-blue-900 uppercase tracking-wide">
+                <Sliders className="w-3.5 h-3.5 text-blue-600" />
+                Customize Prompt Parameters
+              </div>
+              {(topic || customPrompt || additionalNotes) && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setTopic('');
+                    setCustomPrompt('');
+                    setAdditionalNotes('');
+                  }}
+                  className="text-[11px] font-semibold text-slate-500 hover:text-rose-600 cursor-pointer"
+                >
+                  Clear All
+                </button>
+              )}
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -96,7 +115,8 @@ export const PromptModal: React.FC<PromptModalProps> = ({
                   type="text"
                   value={topic}
                   onChange={(e) => setTopic(e.target.value)}
-                  placeholder="e.g. भीमबेटका की गुफाएँ or Trigonometry"
+                  placeholder="Enter topic here..."
+                  autoFocus
                   className="w-full text-xs px-3 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-hidden bg-white"
                 />
               </div>
@@ -106,16 +126,14 @@ export const PromptModal: React.FC<PromptModalProps> = ({
                   <label className="block text-xs font-semibold text-slate-700 mb-1">
                     Questions Count
                   </label>
-                  <select
+                  <input
+                    type="number"
+                    min={1}
+                    max={300}
                     value={questionCount}
-                    onChange={(e) => setQuestionCount(Number(e.target.value))}
+                    onChange={(e) => setQuestionCount(Math.max(1, Number(e.target.value) || 50))}
                     className="w-full text-xs px-2.5 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-hidden bg-white"
-                  >
-                    <option value={10}>10 Questions</option>
-                    <option value={20}>20 Questions</option>
-                    <option value={50}>50 Questions</option>
-                    <option value={100}>100 Questions (Full Paper)</option>
-                  </select>
+                  />
                 </div>
 
                 <div>
@@ -127,8 +145,8 @@ export const PromptModal: React.FC<PromptModalProps> = ({
                     onChange={(e) => setLanguage(e.target.value as any)}
                     className="w-full text-xs px-2.5 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-hidden bg-white"
                   >
-                    <option value="Hindi">Hindi (हिंदी)</option>
                     <option value="Hinglish">Hinglish (Tech Words in English)</option>
+                    <option value="Hindi">Hindi (हिंदी)</option>
                     <option value="English">English</option>
                     <option value="Bilingual (Hindi + English)">Bilingual (Hindi + English)</option>
                   </select>
@@ -161,14 +179,14 @@ export const PromptModal: React.FC<PromptModalProps> = ({
                   type="text"
                   value={additionalNotes}
                   onChange={(e) => setAdditionalNotes(e.target.value)}
-                  placeholder="e.g. Focus on archaeological periods and rock art"
+                  placeholder="Optional focus area..."
                   className="w-full text-xs px-3 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-hidden bg-white"
                 />
               </div>
             </div>
           </div>
 
-          {/* Prompt Display Box */}
+          {/* Prompt Display Box (Clean by default) */}
           <div>
             <div className="flex justify-between items-center mb-1.5">
               <span className="text-xs font-semibold text-slate-600 flex items-center gap-1">
@@ -181,9 +199,17 @@ export const PromptModal: React.FC<PromptModalProps> = ({
             </div>
 
             <div className="relative bg-slate-50/70 p-2 rounded-xl border border-slate-200">
-              <pre className="bg-white text-slate-800 p-4 rounded-lg text-xs font-mono overflow-x-auto max-h-56 select-all whitespace-pre-wrap leading-relaxed border border-slate-300 shadow-2xs">
-                {currentPrompt}
-              </pre>
+              <textarea
+                value={currentPrompt}
+                onChange={(e) => {
+                  if (!topic.trim()) {
+                    setCustomPrompt(e.target.value);
+                  }
+                }}
+                readOnly={Boolean(topic.trim())}
+                placeholder="Type a topic above to generate your prompt here..."
+                className="w-full h-48 bg-white text-slate-800 p-4 rounded-lg text-xs font-mono leading-relaxed border border-slate-300 shadow-2xs focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 resize-y"
+              />
             </div>
           </div>
         </div>
@@ -191,7 +217,7 @@ export const PromptModal: React.FC<PromptModalProps> = ({
         {/* Action Buttons in Footer */}
         <div className="px-6 py-4 bg-slate-50 border-t border-slate-200 flex flex-wrap items-center justify-between gap-3">
           <div className="text-xs text-slate-500">
-            Click <strong>Copy Prompt</strong>, paste it into any AI, then copy the result and hit <strong>Paste</strong>!
+            Enter a topic, click <strong>Copy Prompt</strong>, paste into any AI, then paste the result in the Input Box!
           </div>
 
           <div className="flex items-center gap-2">
@@ -199,7 +225,7 @@ export const PromptModal: React.FC<PromptModalProps> = ({
               <button
                 type="button"
                 onClick={() => onGenerateAI(topic, questionCount, language, difficulty)}
-                disabled={isGeneratingAI}
+                disabled={isGeneratingAI || !topic.trim()}
                 className="inline-flex items-center gap-1.5 px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg text-xs font-bold hover:from-purple-700 hover:to-indigo-700 transition-all shadow-xs cursor-pointer disabled:opacity-50"
               >
                 <Sparkles className="w-3.5 h-3.5" />
@@ -210,8 +236,9 @@ export const PromptModal: React.FC<PromptModalProps> = ({
             <button
               type="button"
               onClick={handleCopy}
+              disabled={!currentPrompt.trim()}
               className={`
-                inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold text-white transition-all shadow-xs cursor-pointer
+                inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold text-white transition-all shadow-xs cursor-pointer disabled:opacity-40
                 ${
                   copied
                     ? 'bg-emerald-600 hover:bg-emerald-700'

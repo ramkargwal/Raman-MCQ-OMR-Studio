@@ -45,17 +45,16 @@ import { QuestionEditorModal } from './components/QuestionEditorModal';
 import { SavedExamsModal } from './components/SavedExamsModal';
 
 const STORAGE_KEYS = {
-  ACTIVE_INPUT: 'rrvv_mcq_active_input_v5',
-  ACTIVE_METADATA: 'rrvv_mcq_active_metadata_v2',
+  ACTIVE_METADATA: 'rrvv_mcq_active_metadata_v3',
   SAVED_EXAMS: 'rrvv_mcq_saved_exams_v1',
 };
 
 const DEFAULT_METADATA: QuizMetadata = {
   instituteName: 'राम रमन विज्ञान विश्वविद्यालय',
-  examTitle: 'वार्षिक बहुविकल्पीय परीक्षा (Annual 100 Questions Assessment)',
+  examTitle: 'वार्षिक बहुविकल्पीय परीक्षा (MCQ Assessment)',
   subject: 'विज्ञान एवं गणित (Science & Mathematics)',
   classGrade: 'विश्वविद्यालय स्नातक / प्रवेश परीक्षा',
-  testCode: 'RRVV-100/SET-A',
+  testCode: 'RRVV/SET-A',
   date: new Date().toLocaleDateString('hi-IN', {
     year: 'numeric',
     month: 'long',
@@ -75,24 +74,14 @@ const DEFAULT_METADATA: QuizMetadata = {
   includeOmr: true,
   includeQuestions: true,
   includeAnswerKey: true,
-  omrCapacity: 100,
+  omrCapacity: 0,
 };
 
 export default function App() {
-  // Load initial input text from localStorage or default 100 unique questions
-  const [inputText, setInputText] = useState<string>(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEYS.ACTIVE_INPUT);
-      if (saved && saved.trim() && !saved.includes('राम रमन विज्ञान विश्वविद्यालय प्रश्न सं.')) {
-        return saved;
-      }
-    } catch {
-      // ignore storage errors
-    }
-    return generateRamRaman100QuestionsText();
-  });
+  // Default input box is clean/empty when the page opens
+  const [inputText, setInputText] = useState<string>('');
 
-  // Load initial metadata from localStorage or default (with single default instruction)
+  // Load initial metadata from localStorage or default
   const [metadata, setMetadata] = useState<QuizMetadata>(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEYS.ACTIVE_METADATA);
@@ -137,14 +126,40 @@ export default function App() {
   const [isDraggingFile, setIsDraggingFile] = useState(false);
   const txtFileInputRef = useRef<HTMLInputElement | null>(null);
 
-  // Auto-save active inputText and metadata to localStorage
-  useEffect(() => {
-    try {
-      localStorage.setItem(STORAGE_KEYS.ACTIVE_INPUT, inputText);
-    } catch {
-      // ignore
+  // Top navbar dropdown state & hover grace timer so menu never disappears while moving pointer
+  const [openDropdown, setOpenDropdown] = useState<'presets' | 'print' | null>(null);
+  const dropdownTimerRef = useRef<number | null>(null);
+  const navDropdownAreaRef = useRef<HTMLDivElement | null>(null);
+
+  const handleDropdownEnter = (menu: 'presets' | 'print') => {
+    if (dropdownTimerRef.current) {
+      window.clearTimeout(dropdownTimerRef.current);
+      dropdownTimerRef.current = null;
     }
-  }, [inputText]);
+    setOpenDropdown(menu);
+  };
+
+  const handleDropdownLeave = () => {
+    if (dropdownTimerRef.current) {
+      window.clearTimeout(dropdownTimerRef.current);
+    }
+    dropdownTimerRef.current = window.setTimeout(() => {
+      setOpenDropdown(null);
+    }, 220);
+  };
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (
+        navDropdownAreaRef.current &&
+        !navDropdownAreaRef.current.contains(e.target as Node)
+      ) {
+        setOpenDropdown(null);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   useEffect(() => {
     try {
@@ -373,7 +388,7 @@ export default function App() {
         testCode: 'RRVV-100/SET-A',
         timeLimit: '120 मिनट (2 Hours)',
         maxMarks: 100,
-        omrCapacity: 100,
+        omrCapacity: 0,
         twoColumnLayout: true,
         watermarkText: 'राम रमन विज्ञान विश्वविद्यालय',
       }));
@@ -386,6 +401,7 @@ export default function App() {
         examTitle: 'ऐतिहासिक अध्ययन परीक्षा (भीमबेटका शैलचित्र)',
         subject: 'प्राचीन भारतीय इतिहास एवं पुरातत्व',
         testCode: 'BHIM-2026',
+        omrCapacity: 0,
         twoColumnLayout: false,
       }));
     } else if (sampleType === 'math') {
@@ -399,6 +415,7 @@ export default function App() {
         examTitle: 'गणित एवं त्रिकोणमिति परीक्षा (Higher Mathematics)',
         subject: 'MATHEMATICS (त्रिकोणमिति, सम्मिश्र संख्या एवं कलन)',
         testCode: 'MATH-XII-A',
+        omrCapacity: 0,
         twoColumnLayout: true,
       }));
     } else if (sampleType === 'physics') {
@@ -412,10 +429,12 @@ export default function App() {
         examTitle: 'भौतिकी एवं रासायनिक विज्ञान परीक्षा (Science Assessment)',
         subject: 'PHYSICAL SCIENCES & CHEMISTRY (भौतिकी एवं रसायन)',
         testCode: 'SCI-2026',
+        omrCapacity: 0,
         twoColumnLayout: true,
       }));
     }
     setUserAnswers({});
+    setOpenDropdown(null);
     showToast('Sample Loaded & Randomized!');
   };
 
@@ -426,10 +445,12 @@ export default function App() {
   ) => {
     setPrintTarget(target);
     setActiveTab(tab);
+    setOpenDropdown(null);
   };
 
   // Trigger selective or full print
   const handlePrintWithMode = (mode?: PrintTarget) => {
+    setOpenDropdown(null);
     if (mode) {
       setPrintTarget(mode);
       setActiveTab('preview');
@@ -513,7 +534,10 @@ export default function App() {
           SINGLE MINIMAL TOP NAVIGATION BAR (NO-PRINT)
       ======================================================== */}
       <nav className="no-print sticky top-0 z-40 bg-white/95 backdrop-blur-md text-slate-900 border-b border-slate-200/90 shadow-2xs">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 py-2.5 flex items-center justify-between gap-2">
+        <div
+          ref={navDropdownAreaRef}
+          className="max-w-5xl mx-auto px-4 sm:px-6 py-2.5 flex items-center justify-between gap-2"
+        >
           {/* Brand + Compact Status Pill */}
           <div className="flex items-center gap-2.5 min-w-0">
             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-600 to-indigo-700 flex items-center justify-center shadow-2xs shrink-0">
@@ -554,53 +578,68 @@ export default function App() {
               <LayoutGrid className="w-4 h-4" />
             </button>
 
-            {/* Presets Dropdown (Icon Trigger) */}
-            <div className="relative group">
+            {/* Presets Dropdown (Hover Bridge + Click Toggle) */}
+            <div
+              className="relative"
+              onMouseEnter={() => handleDropdownEnter('presets')}
+              onMouseLeave={handleDropdownLeave}
+            >
               <button
                 type="button"
-                className="p-2 rounded-lg bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 transition cursor-pointer"
+                onClick={() =>
+                  setOpenDropdown((prev) => (prev === 'presets' ? null : 'presets'))
+                }
+                className={`p-2 rounded-lg border transition cursor-pointer ${
+                  openDropdown === 'presets'
+                    ? 'bg-amber-50 border-amber-300 text-amber-800'
+                    : 'bg-white hover:bg-slate-50 text-slate-700 border-slate-200'
+                }`}
                 title="Load Preset Sample Papers"
               >
                 <BookOpen className="w-4 h-4 text-amber-500" />
               </button>
 
-              <div className="absolute right-0 mt-1.5 w-60 bg-white border border-slate-200 rounded-xl shadow-xl py-1.5 z-50 hidden group-hover:block hover:block">
-                <div className="px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-400 border-b border-slate-100">
-                  Preset Sample Papers
+              {openDropdown === 'presets' && (
+                <div className="absolute right-0 top-full pt-2 w-64 z-50">
+                  <div className="bg-white border border-slate-200 rounded-xl shadow-xl py-1.5 overflow-hidden">
+                    <div className="px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-400 border-b border-slate-100">
+                      Preset Sample Papers
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => handleLoadSample('ramraman100')}
+                      className="w-full text-left px-3 py-2 text-xs text-slate-700 hover:bg-blue-50/60 flex flex-col border-b border-slate-100 cursor-pointer"
+                    >
+                      <span className="font-bold text-amber-700">⚡ राम रमन 100 प्रश्न OMR टेस्ट</span>
+                      <span className="text-[10px] text-slate-500">100 Questions Full Paper &amp; OMR</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleLoadSample('bhimbetka')}
+                      className="w-full text-left px-3 py-2 text-xs text-slate-700 hover:bg-slate-50 flex flex-col cursor-pointer"
+                    >
+                      <span className="font-bold text-slate-800">भीमबेटका की गुफाएँ</span>
+                      <span className="text-[10px] text-slate-500">20 History Questions in Hindi</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleLoadSample('math')}
+                      className="w-full text-left px-3 py-2 text-xs text-slate-700 hover:bg-slate-50 flex flex-col border-t border-slate-100 cursor-pointer"
+                    >
+                      <span className="font-bold text-blue-700">Mathematics &amp; Trigonometry</span>
+                      <span className="text-[10px] text-slate-500">20 LaTeX Formula Questions</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleLoadSample('physics')}
+                      className="w-full text-left px-3 py-2 text-xs text-slate-700 hover:bg-slate-50 flex flex-col border-t border-slate-100 cursor-pointer"
+                    >
+                      <span className="font-bold text-emerald-700">Physics &amp; Chemistry</span>
+                      <span className="text-[10px] text-slate-500">Kinematics &amp; Equations</span>
+                    </button>
+                  </div>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => handleLoadSample('ramraman100')}
-                  className="w-full text-left px-3 py-2 text-xs text-slate-700 hover:bg-blue-50/60 flex flex-col border-b border-slate-100 cursor-pointer"
-                >
-                  <span className="font-bold text-amber-700">⚡ राम रमन 100 प्रश्न OMR टेस्ट</span>
-                  <span className="text-[10px] text-slate-500">100 Questions Full Paper &amp; OMR</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleLoadSample('bhimbetka')}
-                  className="w-full text-left px-3 py-2 text-xs text-slate-700 hover:bg-slate-50 flex flex-col cursor-pointer"
-                >
-                  <span className="font-bold text-slate-800">भीमबेटका की गुफाएँ</span>
-                  <span className="text-[10px] text-slate-500">20 History Questions in Hindi</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleLoadSample('math')}
-                  className="w-full text-left px-3 py-2 text-xs text-slate-700 hover:bg-slate-50 flex flex-col border-t border-slate-100 cursor-pointer"
-                >
-                  <span className="font-bold text-blue-700">Mathematics &amp; Trigonometry</span>
-                  <span className="text-[10px] text-slate-500">20 LaTeX Formula Questions</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleLoadSample('physics')}
-                  className="w-full text-left px-3 py-2 text-xs text-slate-700 hover:bg-slate-50 flex flex-col border-t border-slate-100 cursor-pointer"
-                >
-                  <span className="font-bold text-emerald-700">Physics &amp; Chemistry</span>
-                  <span className="text-[10px] text-slate-500">Kinematics &amp; Equations</span>
-                </button>
-              </div>
+              )}
             </div>
 
             {/* Visual Question Editor (Icon Button) */}
@@ -667,13 +706,17 @@ export default function App() {
               <Sliders className="w-4 h-4" />
             </button>
 
-            {/* Consolidated Print PDF & All Pages Selector Dropdown */}
-            <div className="relative group">
+            {/* Consolidated Print PDF & All Pages Selector Dropdown (Hover Bridge + Click Toggle) */}
+            <div
+              className="relative"
+              onMouseEnter={() => handleDropdownEnter('print')}
+              onMouseLeave={handleDropdownLeave}
+            >
               <div className="inline-flex rounded-lg shadow-2xs overflow-hidden">
                 <button
                   type="button"
                   onClick={() => handlePrintWithMode()}
-                  disabled={questions.length === 0}
+                  disabled={questions.length === 0 && printTarget !== 'omr_only' && activeTab !== 'omr'}
                   className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition cursor-pointer disabled:opacity-50"
                   title="Print currently selected pages"
                 >
@@ -685,7 +728,9 @@ export default function App() {
                 </button>
                 <button
                   type="button"
-                  disabled={questions.length === 0}
+                  onClick={() =>
+                    setOpenDropdown((prev) => (prev === 'print' ? null : 'print'))
+                  }
                   className="px-2 py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white border-l border-emerald-500 text-xs font-bold transition cursor-pointer"
                   title="Select pages to view or print"
                 >
@@ -694,109 +739,114 @@ export default function App() {
               </div>
 
               {/* All Page View & Print Options Shifted Under Print PDF Dropdown */}
-              <div className="absolute right-0 mt-1.5 w-72 bg-white border border-slate-200 rounded-xl shadow-xl py-1.5 z-50 hidden group-hover:block hover:block">
-                <div className="px-3.5 py-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-400 border-b border-slate-100 flex items-center justify-between">
-                  <span>Select Pages (View &amp; Print)</span>
-                  <span>Click 🖨️ to Print</span>
-                </div>
+              {openDropdown === 'print' && (
+                <div className="absolute right-0 top-full pt-2 w-72 z-50">
+                  <div className="bg-white border border-slate-200 rounded-xl shadow-xl py-1.5 overflow-hidden">
+                    <div className="px-3.5 py-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-400 border-b border-slate-100 flex items-center justify-between">
+                      <span>Select Pages (View &amp; Print)</span>
+                      <span>Click 🖨️ to Print</span>
+                    </div>
 
-                {(
-                  [
-                    {
-                      id: 'full',
-                      tab: 'preview',
-                      title: 'Full Pack (All Pages)',
-                      desc: 'Page 1 OMR + Question Paper + Answer Key',
-                    },
-                    {
-                      id: 'student_pack',
-                      tab: 'preview',
-                      title: 'Student Copy (OMR + Paper)',
-                      desc: 'OMR Sheet + Question Paper (No Key)',
-                    },
-                    {
-                      id: 'omr_only',
-                      tab: 'omr',
-                      title: 'Only OMR Sheet',
-                      desc: 'Page 1 OMR Response Sheet Only',
-                    },
-                    {
-                      id: 'paper_only',
-                      tab: 'paper',
-                      title: 'Only Question Paper',
-                      desc: 'MCQ Question Booklet Pages Only',
-                    },
-                    {
-                      id: 'key_only',
-                      tab: 'answers',
-                      title: 'Only Answer Key',
-                      desc: 'Last Page Official Answer Key Only',
-                    },
-                  ] as Array<{
-                    id: PrintTarget;
-                    tab: 'preview' | 'omr' | 'paper' | 'answers';
-                    title: string;
-                    desc: string;
-                  }>
-                ).map((item) => {
-                  const isCurrent =
-                    activeTab !== 'practice' && printTarget === item.id;
-                  return (
-                    <div
-                      key={item.id}
-                      className={`flex items-center justify-between px-3 py-2 border-b border-slate-100 last:border-none transition ${
-                        isCurrent ? 'bg-emerald-50/70' : 'hover:bg-slate-50'
-                      }`}
-                    >
-                      <button
-                        type="button"
-                        onClick={() => handleSelectPageMode(item.id, item.tab)}
-                        className="flex-1 text-left pr-2 cursor-pointer"
-                      >
+                    {(
+                      [
+                        {
+                          id: 'full',
+                          tab: 'preview',
+                          title: 'Full Pack (All Pages)',
+                          desc: 'Page 1 OMR + Question Paper + Answer Key',
+                        },
+                        {
+                          id: 'student_pack',
+                          tab: 'preview',
+                          title: 'Student Copy (OMR + Paper)',
+                          desc: 'OMR Sheet + Question Paper (No Key)',
+                        },
+                        {
+                          id: 'omr_only',
+                          tab: 'omr',
+                          title: 'Only OMR Sheet',
+                          desc: 'Page 1 Full-A4 OMR Response Sheet Only',
+                        },
+                        {
+                          id: 'paper_only',
+                          tab: 'paper',
+                          title: 'Only Question Paper',
+                          desc: 'MCQ Question Booklet Pages Only',
+                        },
+                        {
+                          id: 'key_only',
+                          tab: 'answers',
+                          title: 'Only Answer Key',
+                          desc: 'Last Page Official Answer Key Only',
+                        },
+                      ] as Array<{
+                        id: PrintTarget;
+                        tab: 'preview' | 'omr' | 'paper' | 'answers';
+                        title: string;
+                        desc: string;
+                      }>
+                    ).map((item) => {
+                      const isCurrent =
+                        activeTab !== 'practice' && printTarget === item.id;
+                      return (
                         <div
-                          className={`text-xs font-bold flex items-center gap-1.5 ${
-                            isCurrent ? 'text-emerald-800' : 'text-slate-700'
+                          key={item.id}
+                          className={`flex items-center justify-between px-3 py-2 border-b border-slate-100 last:border-none transition ${
+                            isCurrent ? 'bg-emerald-50/70' : 'hover:bg-slate-50'
                           }`}
                         >
-                          <span>{item.title}</span>
-                          {isCurrent && <Check className="w-3.5 h-3.5 text-emerald-600" />}
-                        </div>
-                        <div className="text-[10px] text-slate-500">{item.desc}</div>
-                      </button>
+                          <button
+                            type="button"
+                            onClick={() => handleSelectPageMode(item.id, item.tab)}
+                            className="flex-1 text-left pr-2 cursor-pointer"
+                          >
+                            <div
+                              className={`text-xs font-bold flex items-center gap-1.5 ${
+                                isCurrent ? 'text-emerald-800' : 'text-slate-700'
+                              }`}
+                            >
+                              <span>{item.title}</span>
+                              {isCurrent && <Check className="w-3.5 h-3.5 text-emerald-600" />}
+                            </div>
+                            <div className="text-[10px] text-slate-500">{item.desc}</div>
+                          </button>
 
+                          <button
+                            type="button"
+                            onClick={() => handlePrintWithMode(item.id)}
+                            className="p-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white shadow-2xs transition cursor-pointer shrink-0"
+                            title={`Print ${item.title} Now`}
+                          >
+                            <Printer className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      );
+                    })}
+
+                    {/* Interactive Practice OMR Option inside Pages Dropdown */}
+                    <div className="border-t border-slate-200 mt-1 pt-1 px-2">
                       <button
                         type="button"
-                        onClick={() => handlePrintWithMode(item.id)}
-                        className="p-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white shadow-2xs transition cursor-pointer shrink-0"
-                        title={`Print ${item.title} Now`}
+                        onClick={() => {
+                          setActiveTab(activeTab === 'practice' ? 'preview' : 'practice');
+                          setOpenDropdown(null);
+                        }}
+                        className={`w-full text-left px-2.5 py-2 rounded-lg text-xs flex items-center justify-between cursor-pointer transition ${
+                          activeTab === 'practice'
+                            ? 'bg-purple-600 text-white font-bold'
+                            : 'text-purple-700 hover:bg-purple-50 font-semibold'
+                        }`}
                       >
-                        <Printer className="w-3.5 h-3.5" />
+                        <span className="flex items-center gap-1.5">
+                          <GraduationCap className="w-4 h-4" />
+                          <span>Interactive Practice OMR Mode</span>
+                        </span>
+                        {activeTab === 'practice' && <Check className="w-3.5 h-3.5" />}
                       </button>
                     </div>
-                  );
-                })}
-
-                {/* Interactive Practice OMR Option inside Pages Dropdown */}
-                <div className="border-t border-slate-200 mt-1 pt-1 px-2">
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setActiveTab(activeTab === 'practice' ? 'preview' : 'practice')
-                    }
-                    className={`w-full text-left px-2.5 py-2 rounded-lg text-xs flex items-center justify-between cursor-pointer transition ${
-                      activeTab === 'practice'
-                        ? 'bg-purple-600 text-white font-bold'
-                        : 'text-purple-700 hover:bg-purple-50 font-semibold'
-                    }`}
-                  >
-                    <span className="flex items-center gap-1.5">
-                      <GraduationCap className="w-4 h-4" />
-                      <span>Interactive Practice OMR Mode</span>
-                    </span>
-                    {activeTab === 'practice' && <Check className="w-3.5 h-3.5" />}
-                  </button>
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           </div>
         </div>
@@ -1007,22 +1057,29 @@ export default function App() {
               BOTTOM PANEL: DOCUMENT PREVIEW (SAME WIDTH AS INPUT BOX)
           ---------------------------------------------------- */}
           <div className="w-full flex flex-col">
-            {questions.length === 0 ? (
+            {questions.length === 0 && printTarget !== 'omr_only' && activeTab !== 'omr' ? (
               <div className="bg-white rounded-xl border border-dashed border-slate-300 p-10 text-center text-slate-500 shadow-2xs w-full">
                 <AlertCircle className="w-10 h-10 text-slate-300 mx-auto mb-2" />
                 <h4 className="font-bold text-slate-700 text-sm mb-1">
-                  No Questions Detected
+                  Input Box is Clean — Ready for Quiz Data
                 </h4>
                 <p className="text-xs text-slate-500 max-w-md mx-auto mb-4">
-                  Paste quiz objects in the input box above or load a preset paper.
+                  Paste quiz objects in the input box above, upload a .txt file, or preview a blank OMR sheet.
                 </p>
-                <div className="flex justify-center gap-2">
+                <div className="flex flex-wrap justify-center gap-2">
                   <button
                     type="button"
                     onClick={() => handleLoadSample('ramraman100')}
                     className="px-3.5 py-1.5 bg-blue-600 text-white rounded-lg text-xs font-bold hover:bg-blue-700 transition cursor-pointer"
                   >
                     Load 100 Qs Exam Paper
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleSelectPageMode('omr_only', 'omr')}
+                    className="px-3.5 py-1.5 bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-lg text-xs font-bold hover:bg-emerald-100 transition cursor-pointer"
+                  >
+                    Blank OMR Sheet
                   </button>
                   <button
                     type="button"
@@ -1056,7 +1113,7 @@ export default function App() {
                 )}
 
                 {/* MIDDLE PAGES: MCQ QUESTION PAPER */}
-                {showPaperSection && (
+                {showPaperSection && questions.length > 0 && (
                   <div className="print-page w-full">
                     <QuestionPaper
                       metadata={metadata}
@@ -1067,7 +1124,7 @@ export default function App() {
                 )}
 
                 {/* LAST PAGE: ANSWER KEY & SOLUTION MATRIX */}
-                {showKeySection && (
+                {showKeySection && questions.length > 0 && (
                   <div className="print-page w-full">
                     <AnswerKey metadata={metadata} questions={questions} />
                   </div>

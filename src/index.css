@@ -84,7 +84,7 @@
   /* A4 page sizing */
   @page {
     size: A4 portrait;
-    margin: 10mm 9mm 10mm 9mm;
+    margin: 8mm 8mm 8mm 8mm;
   }
 
   /* Remove shadows and borders intended for screen preview */
