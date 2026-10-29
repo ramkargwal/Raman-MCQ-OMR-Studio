@@ -813,28 +813,20 @@ export default function App() {
               )}
             </div>
 
-            {/* Layout switch between Split & Focus */}
-            <div className="hidden lg:flex items-center gap-1 text-slate-500 border-l pl-3">
-              <span className="text-[11px]">Layout:</span>
+            {/* Toggle Show/Hide Top Input Box */}
+            <div className="hidden sm:flex items-center gap-1 text-slate-500 border-l pl-3">
               <button
                 type="button"
-                onClick={() => setViewMode('split')}
-                className={`p-1 rounded cursor-pointer ${
-                  viewMode === 'split' ? 'bg-slate-200 text-slate-800' : 'hover:bg-slate-100'
+                onClick={() => setViewMode(viewMode === 'split' ? 'document' : 'split')}
+                className={`inline-flex items-center gap-1 px-2 py-1 rounded text-[11px] font-semibold cursor-pointer transition ${
+                  viewMode === 'split'
+                    ? 'bg-slate-200 text-slate-800'
+                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                 }`}
-                title="Split Editor & Preview"
+                title="Show or hide the top Quiz Input Data Box"
               >
                 <LayoutGrid className="w-3.5 h-3.5" />
-              </button>
-              <button
-                type="button"
-                onClick={() => setViewMode('document')}
-                className={`p-1 rounded cursor-pointer ${
-                  viewMode === 'document' ? 'bg-slate-200 text-slate-800' : 'hover:bg-slate-100'
-                }`}
-                title="Focus Document Only"
-              >
-                <Layers className="w-3.5 h-3.5" />
+                <span>{viewMode === 'split' ? 'Hide Input Box' : 'Show Input Box'}</span>
               </button>
             </div>
           </div>
@@ -842,7 +834,7 @@ export default function App() {
       </div>
 
       {/* ========================================================
-          MAIN WORKSPACE (EDITOR + DOCUMENT PREVIEW)
+          MAIN WORKSPACE (TOP INPUT BOX + BOTTOM DOCUMENT PREVIEW)
       ======================================================== */}
       <div className="max-w-7xl w-full mx-auto p-4 sm:p-6 flex-1 flex flex-col">
         {/* Practice Mode Scoreboard Banner */}
@@ -890,13 +882,9 @@ export default function App() {
           </div>
         )}
 
-        <div
-          className={`grid gap-6 ${
-            viewMode === 'split' ? 'grid-cols-1 lg:grid-cols-12' : 'grid-cols-1'
-          }`}
-        >
+        <div className="flex flex-col gap-6 w-full">
           {/* ----------------------------------------------------
-              LEFT PANEL: INPUT BOX & CODE EDITOR (NO-PRINT)
+              TOP PANEL: QUIZ INPUT DATA BOX & CODE EDITOR (NO-PRINT)
               (Supports .txt / .json file Upload & Drag-and-Drop)
           ---------------------------------------------------- */}
           {viewMode === 'split' && (
@@ -904,7 +892,7 @@ export default function App() {
               onDragOver={handleDragOver}
               onDragLeave={handleDragLeave}
               onDrop={handleDrop}
-              className={`no-print lg:col-span-5 flex flex-col bg-white rounded-xl border-2 transition-all shadow-sm overflow-hidden relative ${
+              className={`no-print w-full flex flex-col bg-white rounded-xl border-2 transition-all shadow-sm overflow-hidden relative ${
                 isDraggingFile
                   ? 'border-blue-600 ring-4 ring-blue-500/20 bg-blue-50/20'
                   : 'border-slate-200'
@@ -1006,13 +994,13 @@ export default function App() {
               </div>
 
               {/* Textarea Code Box */}
-              <div className="relative flex-1 p-3">
+              <div className="relative p-3">
                 <textarea
                   id="quiz-input-textarea"
                   value={inputText}
                   onChange={(e) => setInputText(e.target.value)}
                   placeholder={`Paste quiz objects here or drag & drop a .txt file:\n{ q: "यदि $z = \\cos\\theta + i\\sin\\theta$ है, तो $z^n + z^{-n}$ किसके बराबर है?", o: ["$2\\sin(n\\theta)$", "$2i\\sin(n\\theta)$", "$2\\cos(n\\theta)$", "$2i\\cos(n\\theta)$"], a: 2 },`}
-                  className="w-full h-80 lg:h-[620px] p-3 text-xs font-mono bg-slate-900 text-slate-100 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-blue-500 resize-none leading-relaxed overflow-y-auto"
+                  className="w-full h-44 sm:h-52 p-3 text-xs font-mono bg-slate-900 text-slate-100 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-blue-500 resize-y leading-relaxed overflow-y-auto"
                   spellCheck={false}
                 />
               </div>
@@ -1050,9 +1038,9 @@ export default function App() {
           )}
 
           {/* ----------------------------------------------------
-              RIGHT PANEL: DOCUMENT PREVIEW (PRINTABLE CONTAINER)
+              BOTTOM PANEL: DOCUMENT PREVIEW (PRINTABLE CONTAINER)
           ---------------------------------------------------- */}
-          <div className={`${viewMode === 'split' ? 'lg:col-span-7' : 'w-full'} flex flex-col`}>
+          <div className="w-full flex flex-col">
             {/* Action Bar Above Preview (NO-PRINT) */}
             <div className="no-print mb-3 flex flex-wrap items-center justify-between gap-2 bg-white p-2.5 rounded-xl border border-slate-200 shadow-2xs text-xs">
               {/* Selective Print Target */}
