@@ -157,16 +157,16 @@ export const QuestionEditorModal: React.FC<QuestionEditorModalProps> = ({
     <div className="no-print fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-xs flex items-center justify-center p-3 sm:p-6">
       <div className="bg-white border border-slate-200 rounded-2xl shadow-2xl w-full max-w-5xl h-[88vh] flex flex-col overflow-hidden">
         {/* Top Modal Header */}
-        <div className="px-5 py-3.5 bg-slate-900 text-white flex items-center justify-between border-b border-slate-800">
+        <div className="px-5 py-3.5 bg-slate-50 text-slate-900 flex items-center justify-between border-b border-slate-200">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center shadow-2xs">
               <Edit3 className="w-4 h-4 text-white" />
             </div>
             <div>
-              <h2 className="text-sm sm:text-base font-extrabold tracking-tight">
+              <h2 className="text-sm sm:text-base font-extrabold tracking-tight text-slate-900">
                 Visual Question Editor &amp; Live LaTeX Fixer
               </h2>
-              <p className="text-[11px] text-slate-400">
+              <p className="text-[11px] text-slate-500">
                 Click any question to edit Hindi text, fix LaTeX math ($...$), or change the correct option
               </p>
             </div>
@@ -176,7 +176,7 @@ export const QuestionEditorModal: React.FC<QuestionEditorModalProps> = ({
             <button
               type="button"
               onClick={handleSaveAndClose}
-              className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition cursor-pointer shadow-sm"
+              className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition cursor-pointer shadow-xs"
             >
               <Check className="w-4 h-4" />
               <span>Save All Changes ({localQuestions.length})</span>
@@ -184,7 +184,7 @@ export const QuestionEditorModal: React.FC<QuestionEditorModalProps> = ({
             <button
               type="button"
               onClick={onClose}
-              className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition cursor-pointer"
+              className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-200/70 transition cursor-pointer"
               title="Close without saving"
             >
               <X className="w-5 h-5" />

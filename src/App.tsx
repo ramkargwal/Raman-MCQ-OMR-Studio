@@ -485,27 +485,27 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-100 flex flex-col text-slate-800">
+    <div className="min-h-screen bg-[#F8FAFC] flex flex-col text-slate-800 selection:bg-blue-100 selection:text-blue-900">
       {/* ========================================================
           TOP NAVIGATION BAR (NO-PRINT)
       ======================================================== */}
-      <nav className="no-print sticky top-0 z-40 bg-slate-900 text-white border-b border-slate-800 shadow-md">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-2.5 flex flex-wrap items-center justify-between gap-3">
+      <nav className="no-print sticky top-0 z-40 bg-white/95 backdrop-blur-md text-slate-900 border-b border-slate-200/90 shadow-2xs">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex flex-wrap items-center justify-between gap-3">
           {/* Logo & Title */}
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-lg bg-blue-600 flex items-center justify-center shadow-md">
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-700 flex items-center justify-center shadow-xs ring-1 ring-blue-600/20">
               <FileText className="w-5 h-5 text-white" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="font-extrabold tracking-tight text-white text-base">
+                <span className="font-extrabold tracking-tight text-slate-900 text-base">
                   MCQ &amp; OMR Paper Studio
                 </span>
-                <span className="bg-blue-500/20 text-blue-300 text-[10px] font-bold px-2 py-0.5 rounded-full border border-blue-400/30">
+                <span className="bg-blue-50 text-blue-700 text-[10px] font-bold px-2 py-0.5 rounded-md border border-blue-200/80">
                   LaTeX Math Engine
                 </span>
               </div>
-              <p className="text-[11px] text-slate-400 hidden sm:block">
+              <p className="text-[11px] text-slate-500 hidden sm:block">
                 Page 1 OMR Sheet • Middle MCQ Paper • Last Page Answer Key
               </p>
             </div>
@@ -518,10 +518,10 @@ export default function App() {
               type="button"
               onClick={() => handleOpenQuestionEditor(null)}
               disabled={questions.length === 0}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold transition shadow-xs cursor-pointer disabled:opacity-50"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200/80 text-xs font-bold transition shadow-2xs cursor-pointer disabled:opacity-50"
               title="Open Visual Question Editor & Live LaTeX Fixer"
             >
-              <Edit3 className="w-3.5 h-3.5" />
+              <Edit3 className="w-3.5 h-3.5 text-indigo-600" />
               <span>Visual Editor</span>
             </button>
 
@@ -529,10 +529,10 @@ export default function App() {
             <button
               type="button"
               onClick={() => setIsSavedExamsOpen(true)}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-bold transition shadow-xs cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white hover:bg-slate-50 text-slate-700 border border-slate-200/90 text-xs font-bold transition shadow-2xs cursor-pointer"
               title="Save, Load, Export (.json/.txt) or Import Exam Papers"
             >
-              <FolderOpen className="w-3.5 h-3.5 text-amber-400" />
+              <FolderOpen className="w-3.5 h-3.5 text-amber-500" />
               <span>Save / Files</span>
             </button>
 
@@ -540,7 +540,7 @@ export default function App() {
             <button
               type="button"
               onClick={() => setIsPromptModalOpen(true)}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold transition shadow-xs cursor-pointer active:scale-95"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition shadow-xs cursor-pointer active:scale-95"
             >
               <Copy className="w-3.5 h-3.5" />
               <span>Copy AI Prompt</span>
@@ -550,10 +550,10 @@ export default function App() {
             <button
               type="button"
               onClick={handlePasteFromClipboard}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-bold transition shadow-xs cursor-pointer active:scale-95"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white hover:bg-slate-50 text-slate-700 border border-slate-200/90 text-xs font-bold transition shadow-2xs cursor-pointer active:scale-95"
               title="Paste quiz code from clipboard"
             >
-              <ClipboardPaste className="w-3.5 h-3.5 text-blue-400" />
+              <ClipboardPaste className="w-3.5 h-3.5 text-blue-600" />
               <span className="hidden md:inline">Paste</span>
             </button>
 
@@ -561,47 +561,47 @@ export default function App() {
             <div className="relative group">
               <button
                 type="button"
-                className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 text-xs font-semibold transition"
+                className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-white hover:bg-slate-50 text-slate-700 border border-slate-200/90 text-xs font-semibold transition shadow-2xs cursor-pointer"
               >
-                <BookOpen className="w-3.5 h-3.5 text-amber-400" />
+                <BookOpen className="w-3.5 h-3.5 text-amber-500" />
                 <span className="hidden xl:inline">Presets</span>
-                <ChevronDown className="w-3 h-3 opacity-60" />
+                <ChevronDown className="w-3 h-3 text-slate-400" />
               </button>
 
-              <div className="absolute right-0 mt-1 w-64 bg-slate-800 border border-slate-700 rounded-lg shadow-xl py-1 z-50 hidden group-hover:block hover:block">
+              <div className="absolute right-0 mt-1.5 w-64 bg-white border border-slate-200 rounded-xl shadow-xl py-1.5 z-50 hidden group-hover:block hover:block">
                 <button
                   type="button"
                   onClick={() => handleLoadSample('ramraman100')}
-                  className="w-full text-left px-3 py-2 text-xs text-slate-200 hover:bg-slate-700 flex flex-col bg-slate-800/80 border-b border-slate-700"
+                  className="w-full text-left px-3.5 py-2 text-xs text-slate-700 hover:bg-blue-50/60 flex flex-col border-b border-slate-100 cursor-pointer"
                 >
-                  <span className="font-bold text-amber-300 flex items-center gap-1">
+                  <span className="font-bold text-amber-700 flex items-center gap-1">
                     <span>⚡ राम रमन 100 प्रश्न OMR टेस्ट</span>
                   </span>
-                  <span className="text-[10px] text-slate-300">100 Questions Full Paper &amp; OMR</span>
+                  <span className="text-[10px] text-slate-500">100 Questions Full Paper &amp; OMR</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => handleLoadSample('bhimbetka')}
-                  className="w-full text-left px-3 py-2 text-xs text-slate-200 hover:bg-slate-700 flex flex-col"
+                  className="w-full text-left px-3.5 py-2 text-xs text-slate-700 hover:bg-slate-50 flex flex-col cursor-pointer"
                 >
-                  <span className="font-bold text-slate-200">भीमबेटका की गुफाएँ</span>
-                  <span className="text-[10px] text-slate-400">20 History Questions in Hindi</span>
+                  <span className="font-bold text-slate-800">भीमबेटका की गुफाएँ</span>
+                  <span className="text-[10px] text-slate-500">20 History Questions in Hindi</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => handleLoadSample('math')}
-                  className="w-full text-left px-3 py-2 text-xs text-slate-200 hover:bg-slate-700 flex flex-col border-t border-slate-700"
+                  className="w-full text-left px-3.5 py-2 text-xs text-slate-700 hover:bg-slate-50 flex flex-col border-t border-slate-100 cursor-pointer"
                 >
-                  <span className="font-bold text-blue-300">Mathematics &amp; Trigonometry</span>
-                  <span className="text-[10px] text-slate-400">20 Rich LaTeX Formula Questions</span>
+                  <span className="font-bold text-blue-700">Mathematics &amp; Trigonometry</span>
+                  <span className="text-[10px] text-slate-500">20 Rich LaTeX Formula Questions</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => handleLoadSample('physics')}
-                  className="w-full text-left px-3 py-2 text-xs text-slate-200 hover:bg-slate-700 flex flex-col border-t border-slate-700"
+                  className="w-full text-left px-3.5 py-2 text-xs text-slate-700 hover:bg-slate-50 flex flex-col border-t border-slate-100 cursor-pointer"
                 >
-                  <span className="font-bold text-emerald-300">Physics &amp; Chemistry</span>
-                  <span className="text-[10px] text-slate-400">Kinematics, Formulas &amp; Equations</span>
+                  <span className="font-bold text-emerald-700">Physics &amp; Chemistry</span>
+                  <span className="text-[10px] text-slate-500">Kinematics, Formulas &amp; Equations</span>
                 </button>
               </div>
             </div>
@@ -610,20 +610,20 @@ export default function App() {
             <button
               type="button"
               onClick={() => setIsSettingsOpen(true)}
-              className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-semibold transition cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white hover:bg-slate-50 text-slate-700 border border-slate-200/90 text-xs font-semibold transition shadow-2xs cursor-pointer"
             >
-              <Sliders className="w-3.5 h-3.5 text-slate-400" />
+              <Sliders className="w-3.5 h-3.5 text-slate-500" />
               <span className="hidden lg:inline">Settings</span>
             </button>
 
             {/* Separate Print Mode Dropdown & Print Button */}
             <div className="relative group">
-              <div className="inline-flex rounded-lg shadow-md overflow-hidden">
+              <div className="inline-flex rounded-lg shadow-xs overflow-hidden">
                 <button
                   type="button"
                   onClick={() => handlePrintWithMode()}
                   disabled={questions.length === 0}
-                  className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition cursor-pointer disabled:opacity-50"
+                  className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition cursor-pointer disabled:opacity-50"
                 >
                   <Printer className="w-4 h-4" />
                   <span>Print PDF</span>
@@ -631,7 +631,7 @@ export default function App() {
                 <button
                   type="button"
                   disabled={questions.length === 0}
-                  className="px-2 py-1.5 bg-emerald-700 hover:bg-emerald-600 text-white border-l border-emerald-500 text-xs font-bold transition cursor-pointer"
+                  className="px-2 py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white border-l border-emerald-500 text-xs font-bold transition cursor-pointer"
                   title="Select what to print"
                 >
                   <ChevronDown className="w-3.5 h-3.5" />
@@ -639,8 +639,8 @@ export default function App() {
               </div>
 
               {/* Dropdown Menu for Separate Print Modes */}
-              <div className="absolute right-0 mt-1 w-64 bg-slate-800 border border-slate-700 rounded-lg shadow-xl py-1.5 z-50 hidden group-hover:block hover:block">
-                <div className="px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-400 border-b border-slate-700">
+              <div className="absolute right-0 mt-1.5 w-64 bg-white border border-slate-200 rounded-xl shadow-xl py-1.5 z-50 hidden group-hover:block hover:block">
+                <div className="px-3.5 py-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-400 border-b border-slate-100">
                   Selective Print Mode (One-Click)
                 </div>
                 {(
@@ -676,15 +676,15 @@ export default function App() {
                     key={item.id}
                     type="button"
                     onClick={() => handlePrintWithMode(item.id)}
-                    className={`w-full text-left px-3 py-2 text-xs hover:bg-slate-700 flex flex-col border-b border-slate-700/60 last:border-none cursor-pointer ${
-                      printTarget === item.id ? 'bg-slate-700/70 text-emerald-300' : 'text-slate-200'
+                    className={`w-full text-left px-3.5 py-2 text-xs hover:bg-slate-50 flex flex-col border-b border-slate-100 last:border-none cursor-pointer ${
+                      printTarget === item.id ? 'bg-emerald-50/70 text-emerald-800' : 'text-slate-700'
                     }`}
                   >
                     <span className="font-bold flex items-center justify-between">
                       <span>{item.title}</span>
-                      {printTarget === item.id && <Check className="w-3.5 h-3.5 text-emerald-400" />}
+                      {printTarget === item.id && <Check className="w-3.5 h-3.5 text-emerald-600" />}
                     </span>
-                    <span className="text-[10px] text-slate-400">{item.desc}</span>
+                    <span className="text-[10px] text-slate-500">{item.desc}</span>
                   </button>
                 ))}
               </div>
@@ -694,7 +694,7 @@ export default function App() {
 
         {/* Status notification toast */}
         {copiedStatus && (
-          <div className="bg-emerald-600 text-white text-center text-xs py-1 font-semibold flex items-center justify-center gap-1.5">
+          <div className="bg-emerald-600 text-white text-center text-xs py-1.5 font-semibold flex items-center justify-center gap-1.5 shadow-inner">
             <Check className="w-3.5 h-3.5" />
             {copiedStatus}
           </div>
@@ -704,19 +704,19 @@ export default function App() {
       {/* ========================================================
           SUB-HEADER: VIEW CONTROLS & PRINT FILTER (NO-PRINT)
       ======================================================== */}
-      <div className="no-print bg-white border-b border-slate-200 px-4 sm:px-6 py-2 shadow-xs">
+      <div className="no-print bg-slate-50/90 border-b border-slate-200/80 px-4 sm:px-6 py-2">
         <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3 text-xs">
           {/* Tabs for previewing specific parts */}
-          <div className="flex flex-wrap items-center gap-1 bg-slate-100 p-1 rounded-lg border border-slate-200">
+          <div className="flex flex-wrap items-center gap-1 bg-slate-200/70 p-1 rounded-xl border border-slate-200/90">
             <button
               type="button"
               onClick={() => {
                 setActiveTab('preview');
                 setPrintTarget('full');
               }}
-              className={`px-3 py-1 rounded-md font-semibold transition cursor-pointer ${
+              className={`px-3 py-1.5 rounded-lg font-semibold transition cursor-pointer ${
                 activeTab === 'preview' && printTarget === 'full'
-                  ? 'bg-white text-blue-700 shadow-xs'
+                  ? 'bg-white text-blue-700 shadow-2xs ring-1 ring-slate-900/5'
                   : 'text-slate-600 hover:text-slate-900'
               }`}
             >
@@ -729,9 +729,9 @@ export default function App() {
                 setActiveTab('preview');
                 setPrintTarget('student_pack');
               }}
-              className={`px-3 py-1 rounded-md font-semibold transition cursor-pointer ${
+              className={`px-3 py-1.5 rounded-lg font-semibold transition cursor-pointer ${
                 activeTab === 'preview' && printTarget === 'student_pack'
-                  ? 'bg-white text-blue-700 shadow-xs'
+                  ? 'bg-white text-blue-700 shadow-2xs ring-1 ring-slate-900/5'
                   : 'text-slate-600 hover:text-slate-900'
               }`}
             >
@@ -744,9 +744,9 @@ export default function App() {
                 setActiveTab('omr');
                 setPrintTarget('omr_only');
               }}
-              className={`px-3 py-1 rounded-md font-semibold transition cursor-pointer ${
+              className={`px-3 py-1.5 rounded-lg font-semibold transition cursor-pointer ${
                 activeTab === 'omr'
-                  ? 'bg-white text-blue-700 shadow-xs'
+                  ? 'bg-white text-blue-700 shadow-2xs ring-1 ring-slate-900/5'
                   : 'text-slate-600 hover:text-slate-900'
               }`}
             >
@@ -759,9 +759,9 @@ export default function App() {
                 setActiveTab('paper');
                 setPrintTarget('paper_only');
               }}
-              className={`px-3 py-1 rounded-md font-semibold transition cursor-pointer ${
+              className={`px-3 py-1.5 rounded-lg font-semibold transition cursor-pointer ${
                 activeTab === 'paper'
-                  ? 'bg-white text-blue-700 shadow-xs'
+                  ? 'bg-white text-blue-700 shadow-2xs ring-1 ring-slate-900/5'
                   : 'text-slate-600 hover:text-slate-900'
               }`}
             >
@@ -774,9 +774,9 @@ export default function App() {
                 setActiveTab('answers');
                 setPrintTarget('key_only');
               }}
-              className={`px-3 py-1 rounded-md font-semibold transition cursor-pointer ${
+              className={`px-3 py-1.5 rounded-lg font-semibold transition cursor-pointer ${
                 activeTab === 'answers'
-                  ? 'bg-white text-blue-700 shadow-xs'
+                  ? 'bg-white text-blue-700 shadow-2xs ring-1 ring-slate-900/5'
                   : 'text-slate-600 hover:text-slate-900'
               }`}
             >
@@ -786,10 +786,10 @@ export default function App() {
             <button
               type="button"
               onClick={() => setActiveTab('practice')}
-              className={`px-3 py-1 rounded-md font-semibold transition flex items-center gap-1 cursor-pointer ${
+              className={`px-3 py-1.5 rounded-lg font-semibold transition flex items-center gap-1 cursor-pointer ${
                 activeTab === 'practice'
-                  ? 'bg-purple-600 text-white shadow-xs'
-                  : 'text-purple-700 hover:bg-purple-50'
+                  ? 'bg-purple-600 text-white shadow-2xs'
+                  : 'text-purple-700 hover:bg-purple-100/70'
               }`}
             >
               <GraduationCap className="w-3.5 h-3.5" />
@@ -801,12 +801,12 @@ export default function App() {
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-1.5 font-medium">
               {parseResult.error ? (
-                <span className="inline-flex items-center gap-1 text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
+                <span className="inline-flex items-center gap-1 text-amber-800 bg-amber-50 px-2.5 py-1 rounded-md border border-amber-200">
                   <AlertCircle className="w-3.5 h-3.5 text-amber-600" />
                   Format Warning
                 </span>
               ) : (
-                <span className="inline-flex items-center gap-1 text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                <span className="inline-flex items-center gap-1 text-emerald-800 bg-emerald-50 px-2.5 py-1 rounded-md border border-emerald-200/80">
                   <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
                   <strong>{questions.length}</strong> Questions Ready
                 </span>
@@ -814,14 +814,14 @@ export default function App() {
             </div>
 
             {/* Toggle Show/Hide Top Input Box */}
-            <div className="hidden sm:flex items-center gap-1 text-slate-500 border-l pl-3">
+            <div className="hidden sm:flex items-center gap-1 text-slate-500 border-l border-slate-200 pl-3">
               <button
                 type="button"
                 onClick={() => setViewMode(viewMode === 'split' ? 'document' : 'split')}
-                className={`inline-flex items-center gap-1 px-2 py-1 rounded text-[11px] font-semibold cursor-pointer transition ${
+                className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-semibold cursor-pointer transition border ${
                   viewMode === 'split'
-                    ? 'bg-slate-200 text-slate-800'
-                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                    ? 'bg-white text-slate-800 border-slate-300 shadow-2xs'
+                    : 'bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100'
                 }`}
                 title="Show or hide the top Quiz Input Data Box"
               >
@@ -892,10 +892,10 @@ export default function App() {
               onDragOver={handleDragOver}
               onDragLeave={handleDragLeave}
               onDrop={handleDrop}
-              className={`no-print w-full flex flex-col bg-white rounded-xl border-2 transition-all shadow-sm overflow-hidden relative ${
+              className={`no-print w-full flex flex-col bg-white rounded-2xl border transition-all shadow-xs overflow-hidden relative ${
                 isDraggingFile
                   ? 'border-blue-600 ring-4 ring-blue-500/20 bg-blue-50/20'
-                  : 'border-slate-200'
+                  : 'border-slate-200/90'
               }`}
             >
               {/* Drag-and-Drop Visual Overlay */}
@@ -923,14 +923,14 @@ export default function App() {
               />
 
               {/* Input Header */}
-              <div className="px-4 py-3 bg-slate-50 border-b border-slate-200 flex flex-wrap items-center justify-between gap-2">
+              <div className="px-4 py-3 bg-gradient-to-r from-slate-50 via-white to-blue-50/40 border-b border-slate-200/90 flex flex-wrap items-center justify-between gap-2">
                 <div>
                   <h3 className="font-bold text-slate-800 text-xs uppercase tracking-wider flex items-center gap-1.5">
                     <FileText className="w-3.5 h-3.5 text-blue-600" />
                     Quiz Input Data Box
                   </h3>
                   <p className="text-[11px] text-slate-500">
-                    Paste, upload, or drag &amp; drop a <code>.txt</code> file here
+                    Paste, upload, or drag &amp; drop a <code className="text-slate-700 font-semibold">.txt</code> file here
                   </p>
                 </div>
 
@@ -938,7 +938,7 @@ export default function App() {
                   <button
                     type="button"
                     onClick={() => txtFileInputRef.current?.click()}
-                    className="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-bold bg-blue-600 hover:bg-blue-700 text-white rounded border border-blue-700 transition cursor-pointer shadow-2xs"
+                    className="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-bold bg-blue-600 hover:bg-blue-700 text-white rounded-md border border-blue-700 transition cursor-pointer shadow-2xs"
                     title="Upload a .txt or .json quiz file from your computer"
                   >
                     <Upload className="w-3 h-3" />
@@ -948,7 +948,7 @@ export default function App() {
                     type="button"
                     onClick={() => handleOpenQuestionEditor(null)}
                     disabled={questions.length === 0}
-                    className="inline-flex items-center gap-1 px-2 py-1 text-[11px] font-bold bg-indigo-50 hover:bg-indigo-100 text-indigo-800 rounded border border-indigo-200 transition cursor-pointer disabled:opacity-50"
+                    className="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-bold bg-indigo-50 hover:bg-indigo-100 text-indigo-800 rounded-md border border-indigo-200 transition cursor-pointer disabled:opacity-50"
                     title="Edit questions visually with live LaTeX preview"
                   >
                     <Edit3 className="w-3 h-3 text-indigo-600" />
@@ -958,7 +958,7 @@ export default function App() {
                     type="button"
                     onClick={handleRandomizeAllQuestions}
                     disabled={questions.length === 0}
-                    className="inline-flex items-center gap-1 px-2 py-1 text-[11px] font-bold bg-emerald-600 hover:bg-emerald-700 text-white rounded border border-emerald-700 transition cursor-pointer shadow-2xs disabled:opacity-50"
+                    className="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-bold bg-emerald-600 hover:bg-emerald-700 text-white rounded-md border border-emerald-700 transition cursor-pointer shadow-2xs disabled:opacity-50"
                     title="Purely randomize question order AND randomly shuffle all 4 options (A, B, C, D)"
                   >
                     <Shuffle className="w-3 h-3" />
@@ -968,7 +968,7 @@ export default function App() {
                     type="button"
                     onClick={handleBalanceOptions}
                     disabled={questions.length === 0}
-                    className="inline-flex items-center gap-1 px-2 py-1 text-[11px] font-bold bg-white hover:bg-slate-100 text-slate-800 rounded border border-slate-300 transition cursor-pointer shadow-2xs disabled:opacity-50"
+                    className="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-bold bg-white hover:bg-slate-50 text-slate-800 rounded-md border border-slate-300 transition cursor-pointer shadow-2xs disabled:opacity-50"
                     title="Keep question order and purely shuffle all 4 options (A, B, C, D) at random"
                   >
                     <RefreshCw className="w-3 h-3 text-emerald-600" />
@@ -977,7 +977,7 @@ export default function App() {
                   <button
                     type="button"
                     onClick={handlePasteFromClipboard}
-                    className="p-1.5 text-slate-600 hover:text-blue-600 hover:bg-slate-200 rounded transition cursor-pointer"
+                    className="p-1.5 text-slate-600 hover:text-blue-600 hover:bg-slate-100 rounded-md transition cursor-pointer"
                     title="Paste from clipboard"
                   >
                     <ClipboardPaste className="w-4 h-4" />
@@ -985,7 +985,7 @@ export default function App() {
                   <button
                     type="button"
                     onClick={() => setInputText('')}
-                    className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-slate-200 rounded transition cursor-pointer"
+                    className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-md transition cursor-pointer"
                     title="Clear input"
                   >
                     <RotateCcw className="w-4 h-4" />
@@ -993,25 +993,25 @@ export default function App() {
                 </div>
               </div>
 
-              {/* Textarea Code Box */}
-              <div className="relative p-3">
+              {/* Textarea Code Box (White Background) */}
+              <div className="relative p-3.5 bg-slate-50/50">
                 <textarea
                   id="quiz-input-textarea"
                   value={inputText}
                   onChange={(e) => setInputText(e.target.value)}
                   placeholder={`Paste quiz objects here or drag & drop a .txt file:\n{ q: "यदि $z = \\cos\\theta + i\\sin\\theta$ है, तो $z^n + z^{-n}$ किसके बराबर है?", o: ["$2\\sin(n\\theta)$", "$2i\\sin(n\\theta)$", "$2\\cos(n\\theta)$", "$2i\\cos(n\\theta)$"], a: 2 },`}
-                  className="w-full h-44 sm:h-52 p-3 text-xs font-mono bg-slate-900 text-slate-100 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-blue-500 resize-y leading-relaxed overflow-y-auto"
+                  className="w-full h-44 sm:h-52 p-3.5 text-xs font-mono bg-white text-slate-900 border border-slate-300 rounded-xl shadow-2xs placeholder:text-slate-400 focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 resize-y leading-relaxed overflow-y-auto"
                   spellCheck={false}
                 />
               </div>
 
               {/* Input Footer & Answer Distribution Helper */}
-              <div className="px-4 py-2.5 bg-slate-50 border-t border-slate-200 text-xs text-slate-600 flex flex-wrap items-center justify-between gap-2">
+              <div className="px-4 py-2.5 bg-slate-50/90 border-t border-slate-200/90 text-xs text-slate-600 flex flex-wrap items-center justify-between gap-2">
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="font-bold text-slate-900">{questions.length} Qs</span>
                   {questions.length > 0 && (
                     <span
-                      className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-white border border-slate-200 text-[11px] font-mono font-bold text-slate-700"
+                      className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md bg-white border border-slate-200 text-[11px] font-mono font-bold text-slate-700 shadow-2xs"
                       title="Live distribution of correct answers across options A, B, C, and D"
                     >
                       <span className="text-blue-700">A:{answerDistribution.A}</span>
@@ -1042,7 +1042,7 @@ export default function App() {
           ---------------------------------------------------- */}
           <div className="w-full flex flex-col">
             {/* Action Bar Above Preview (NO-PRINT) */}
-            <div className="no-print mb-3 flex flex-wrap items-center justify-between gap-2 bg-white p-2.5 rounded-xl border border-slate-200 shadow-2xs text-xs">
+            <div className="no-print mb-4 flex flex-wrap items-center justify-between gap-2 bg-white p-3 rounded-2xl border border-slate-200/90 shadow-xs text-xs">
               {/* Selective Print Target */}
               <div className="flex items-center gap-2">
                 <span className="text-slate-500 font-semibold">Print Mode:</span>
@@ -1053,7 +1053,7 @@ export default function App() {
                     setPrintTarget(mode);
                     setActiveTab('preview');
                   }}
-                  className="font-bold text-indigo-950 bg-indigo-50/70 border border-indigo-200 rounded-md px-2 py-1 text-xs focus:outline-hidden focus:ring-2 focus:ring-indigo-500 cursor-pointer"
+                  className="font-bold text-indigo-950 bg-indigo-50/70 border border-indigo-200 rounded-lg px-2.5 py-1.5 text-xs focus:outline-hidden focus:ring-2 focus:ring-indigo-500 cursor-pointer"
                 >
                   <option value="full">{printTargetLabels.full}</option>
                   <option value="student_pack">{printTargetLabels.student_pack}</option>
@@ -1069,9 +1069,9 @@ export default function App() {
                 <button
                   type="button"
                   onClick={() => setInkMode((m) => (m === 'color' ? 'bw' : 'color'))}
-                  className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-bold border transition cursor-pointer ${
+                  className={`inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-bold border transition cursor-pointer ${
                     inkMode === 'bw'
-                      ? 'bg-slate-900 border-slate-900 text-white'
+                      ? 'bg-slate-800 border-slate-800 text-white'
                       : 'bg-blue-50 border-blue-200 text-blue-900 hover:bg-blue-100'
                   }`}
                   title="Switch between Deep Color Ink and Pure B&W Laser Printer mode"
@@ -1098,7 +1098,7 @@ export default function App() {
                       twoColumnLayout: !prev.twoColumnLayout,
                     }))
                   }
-                  className={`px-2.5 py-1 rounded-md text-xs font-semibold border transition cursor-pointer ${
+                  className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold border transition cursor-pointer ${
                     metadata.twoColumnLayout
                       ? 'bg-indigo-50 border-indigo-300 text-indigo-800'
                       : 'bg-slate-50 border-slate-300 text-slate-700'
@@ -1109,11 +1109,11 @@ export default function App() {
                 </button>
 
                 {/* Zoom Controls */}
-                <div className="hidden sm:inline-flex items-center border border-slate-200 rounded-md bg-slate-50">
+                <div className="hidden sm:inline-flex items-center border border-slate-200 rounded-lg bg-slate-50">
                   <button
                     type="button"
                     onClick={() => setZoomLevel((z) => Math.max(80, z - 10))}
-                    className="p-1 text-slate-600 hover:text-slate-900 cursor-pointer"
+                    className="p-1.5 text-slate-600 hover:text-slate-900 cursor-pointer"
                     title="Zoom Out"
                   >
                     <ZoomOut className="w-3.5 h-3.5" />
@@ -1124,7 +1124,7 @@ export default function App() {
                   <button
                     type="button"
                     onClick={() => setZoomLevel((z) => Math.min(115, z + 10))}
-                    className="p-1 text-slate-600 hover:text-slate-900 cursor-pointer"
+                    className="p-1.5 text-slate-600 hover:text-slate-900 cursor-pointer"
                     title="Zoom In"
                   >
                     <ZoomIn className="w-3.5 h-3.5" />
@@ -1134,7 +1134,7 @@ export default function App() {
                 <button
                   type="button"
                   onClick={() => handlePrintWithMode()}
-                  className="inline-flex items-center gap-1 px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-md shadow-xs cursor-pointer"
+                  className="inline-flex items-center gap-1 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg shadow-2xs cursor-pointer"
                 >
                   <Printer className="w-3.5 h-3.5" />
                   <span>Print</span>
@@ -1144,7 +1144,7 @@ export default function App() {
 
             {/* Empty state warning if no questions */}
             {questions.length === 0 ? (
-              <div className="bg-white rounded-xl border border-dashed border-slate-300 p-12 text-center text-slate-500">
+              <div className="bg-white rounded-2xl border border-dashed border-slate-300 p-12 text-center text-slate-500 shadow-2xs">
                 <AlertCircle className="w-12 h-12 text-slate-300 mx-auto mb-3" />
                 <h4 className="font-bold text-slate-700 text-base mb-1">
                   No Questions Detected
@@ -1157,14 +1157,14 @@ export default function App() {
                   <button
                     type="button"
                     onClick={() => handleLoadSample('ramraman100')}
-                    className="px-3 py-1.5 bg-blue-600 text-white rounded text-xs font-bold hover:bg-blue-700 transition cursor-pointer"
+                    className="px-3.5 py-2 bg-blue-600 text-white rounded-lg text-xs font-bold hover:bg-blue-700 transition cursor-pointer shadow-2xs"
                   >
                     Load 100 Questions Exam Paper
                   </button>
                   <button
                     type="button"
                     onClick={() => handleLoadSample('math')}
-                    className="px-3 py-1.5 bg-slate-800 text-white rounded text-xs font-bold hover:bg-slate-700 transition cursor-pointer"
+                    className="px-3.5 py-2 bg-white text-slate-700 border border-slate-300 rounded-lg text-xs font-bold hover:bg-slate-50 transition cursor-pointer shadow-2xs"
                   >
                     Load Math &amp; Trigonometry (LaTeX)
                   </button>
@@ -1187,7 +1187,7 @@ export default function App() {
                 ------------------------------------------------ */}
                 {showOmrSection && (
                   <div className="print-page">
-                    <div className="no-print text-center mb-1.5 text-[11px] font-bold text-slate-500 uppercase tracking-widest">
+                    <div className="no-print text-center mb-2 text-[11px] font-bold text-slate-500 uppercase tracking-widest">
                       — PAGE 01 : OMR ANSWER SHEET (100 QUESTIONS) —
                     </div>
                     <OMRSheet
@@ -1205,7 +1205,7 @@ export default function App() {
                 ------------------------------------------------ */}
                 {showPaperSection && (
                   <div className="print-page">
-                    <div className="no-print text-center mb-1.5 text-[11px] font-bold text-slate-500 uppercase tracking-widest">
+                    <div className="no-print text-center mb-2 text-[11px] font-bold text-slate-500 uppercase tracking-widest">
                       — MCQ QUESTION PAPER (HOVER ANY QUESTION TO CLICK EDIT) —
                     </div>
                     <QuestionPaper
@@ -1221,7 +1221,7 @@ export default function App() {
                 ------------------------------------------------ */}
                 {showKeySection && (
                   <div className="print-page">
-                    <div className="no-print text-center mb-1.5 text-[11px] font-bold text-slate-500 uppercase tracking-widest">
+                    <div className="no-print text-center mb-2 text-[11px] font-bold text-slate-500 uppercase tracking-widest">
                       — LAST PAGE : OFFICIAL ANSWER KEY —
                     </div>
                     <AnswerKey metadata={metadata} questions={questions} />

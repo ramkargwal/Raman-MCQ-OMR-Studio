@@ -138,16 +138,16 @@ export const SavedExamsModal: React.FC<SavedExamsModalProps> = ({
     <div className="no-print fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-xs flex items-center justify-center p-3 sm:p-6">
       <div className="bg-white border border-slate-200 rounded-2xl shadow-2xl w-full max-w-3xl max-h-[88vh] flex flex-col overflow-hidden">
         {/* Header */}
-        <div className="px-5 py-3.5 bg-slate-900 text-white flex items-center justify-between border-b border-slate-800">
+        <div className="px-5 py-3.5 bg-slate-50 text-slate-900 flex items-center justify-between border-b border-slate-200">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center shadow-2xs">
               <FolderOpen className="w-4 h-4 text-white" />
             </div>
             <div>
-              <h2 className="text-sm sm:text-base font-extrabold tracking-tight">
+              <h2 className="text-sm sm:text-base font-extrabold tracking-tight text-slate-900">
                 Save, Load &amp; Export Exam Papers
               </h2>
-              <p className="text-[11px] text-slate-400">
+              <p className="text-[11px] text-slate-500">
                 Save multiple exam papers in your browser or export/import .json and .txt files
               </p>
             </div>
@@ -156,7 +156,7 @@ export const SavedExamsModal: React.FC<SavedExamsModalProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition cursor-pointer"
+            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-200/70 transition cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>

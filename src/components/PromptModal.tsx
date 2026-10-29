@@ -180,8 +180,8 @@ export const PromptModal: React.FC<PromptModalProps> = ({
               </span>
             </div>
 
-            <div className="relative">
-              <pre className="bg-slate-900 text-slate-100 p-4 rounded-lg text-xs font-mono overflow-x-auto max-h-56 select-all whitespace-pre-wrap leading-relaxed border border-slate-800">
+            <div className="relative bg-slate-50/70 p-2 rounded-xl border border-slate-200">
+              <pre className="bg-white text-slate-800 p-4 rounded-lg text-xs font-mono overflow-x-auto max-h-56 select-all whitespace-pre-wrap leading-relaxed border border-slate-300 shadow-2xs">
                 {currentPrompt}
               </pre>
             </div>
