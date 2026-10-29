@@ -40,7 +40,7 @@ export const QuestionPaper: React.FC<QuestionPaperProps> = ({
   }[metadata.fontSize || 'normal'];
 
   return (
-    <div className="relative bg-white text-slate-950 w-full max-w-[210mm] mx-auto p-3 sm:p-5 border border-slate-300 screen-only-shadow print:border-none print:p-0 page-break-after box-border">
+    <div className="relative bg-white text-slate-950 w-full mx-auto p-3 sm:p-5 border border-slate-300 rounded-xl print:rounded-none screen-only-shadow print:border-none print:p-0 page-break-after box-border">
       {/* Optional Watermark */}
       {metadata.showWatermark && (
         <div

@@ -13,13 +13,10 @@ import {
   LayoutGrid,
   Check,
   ChevronDown,
-  Layers,
   GraduationCap,
   RefreshCw,
   Edit3,
   FolderOpen,
-  ZoomIn,
-  ZoomOut,
   Palette,
   Contrast,
   Upload,
@@ -126,8 +123,6 @@ export default function App() {
 
   // Printer Ink Mode: 'color' (Deep Ink Color) or 'bw' (Pure Monochrome B&W Laser)
   const [inkMode, setInkMode] = useState<'color' | 'bw'>('color');
-  // Preview Zoom Level (80% to 110%)
-  const [zoomLevel, setZoomLevel] = useState<number>(100);
 
   // Modals & Drawers
   const [isPromptModalOpen, setIsPromptModalOpen] = useState(false);
@@ -197,6 +192,25 @@ export default function App() {
       if (textarea) {
         textarea.focus();
         showToast('Please press Ctrl+V to paste');
+      }
+    }
+  };
+
+  // Copy current quiz input text to clipboard
+  const handleCopyInputToClipboard = async () => {
+    if (!inputText.trim()) {
+      showToast('Input box is empty.');
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText(inputText);
+      showToast('Copied quiz data to clipboard!');
+    } catch {
+      const textarea = document.getElementById('quiz-input-textarea') as HTMLTextAreaElement | null;
+      if (textarea) {
+        textarea.select();
+        document.execCommand('copy');
+        showToast('Copied quiz data to clipboard!');
       }
     }
   };
@@ -405,6 +419,15 @@ export default function App() {
     showToast('Sample Loaded & Randomized!');
   };
 
+  // Select which pages to view on screen
+  const handleSelectPageMode = (
+    target: PrintTarget,
+    tab: 'preview' | 'omr' | 'paper' | 'answers' = 'preview'
+  ) => {
+    setPrintTarget(target);
+    setActiveTab(tab);
+  };
+
   // Trigger selective or full print
   const handlePrintWithMode = (mode?: PrintTarget) => {
     if (mode) {
@@ -476,113 +499,87 @@ export default function App() {
       metadata.includeAnswerKey &&
       (printTarget === 'full' || printTarget === 'key_only'));
 
-  const printTargetLabels: Record<PrintTarget, string> = {
-    full: 'Full Exam Pack (OMR + Paper + Key)',
-    student_pack: 'Student Copy (OMR + Question Paper Only)',
-    omr_only: 'Only Page 1: OMR Sheet',
-    paper_only: 'Only MCQ Question Paper',
-    key_only: 'Only Last Page: Answer Key',
+  const printTargetShortLabels: Record<PrintTarget, string> = {
+    full: 'All Pages',
+    student_pack: 'OMR + Paper',
+    omr_only: 'Only OMR',
+    paper_only: 'Only Paper',
+    key_only: 'Only Key',
   };
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] flex flex-col text-slate-800 selection:bg-blue-100 selection:text-blue-900">
       {/* ========================================================
-          TOP NAVIGATION BAR (NO-PRINT)
+          SINGLE MINIMAL TOP NAVIGATION BAR (NO-PRINT)
       ======================================================== */}
       <nav className="no-print sticky top-0 z-40 bg-white/95 backdrop-blur-md text-slate-900 border-b border-slate-200/90 shadow-2xs">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex flex-wrap items-center justify-between gap-3">
-          {/* Logo & Title */}
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-700 flex items-center justify-center shadow-xs ring-1 ring-blue-600/20">
-              <FileText className="w-5 h-5 text-white" />
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 py-2.5 flex items-center justify-between gap-2">
+          {/* Brand + Compact Status Pill */}
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-600 to-indigo-700 flex items-center justify-center shadow-2xs shrink-0">
+              <FileText className="w-4 h-4 text-white" />
             </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="font-extrabold tracking-tight text-slate-900 text-base">
-                  MCQ &amp; OMR Paper Studio
-                </span>
-                <span className="bg-blue-50 text-blue-700 text-[10px] font-bold px-2 py-0.5 rounded-md border border-blue-200/80">
-                  LaTeX Math Engine
-                </span>
-              </div>
-              <p className="text-[11px] text-slate-500 hidden sm:block">
-                Page 1 OMR Sheet • Middle MCQ Paper • Last Page Answer Key
-              </p>
-            </div>
+            <span className="font-extrabold tracking-tight text-slate-900 text-sm sm:text-base truncate">
+              MCQ &amp; OMR Studio
+            </span>
+            {parseResult.error ? (
+              <span
+                className="inline-flex items-center gap-1 text-amber-800 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200 text-[11px] font-semibold shrink-0"
+                title={parseResult.error}
+              >
+                <AlertCircle className="w-3 h-3 text-amber-600" />
+                <span>Warning</span>
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-1 text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200/80 text-[11px] font-semibold shrink-0">
+                <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                <span>{questions.length} Qs</span>
+              </span>
+            )}
           </div>
 
-          {/* Action Tools */}
-          <div className="flex items-center flex-wrap gap-2">
-            {/* Visual Question Editor Button */}
+          {/* Minimal Icon Toolbar + Consolidated Print PDF Dropdown */}
+          <div className="flex items-center gap-1.5">
+            {/* Show / Hide Top Quiz Input Box */}
             <button
               type="button"
-              onClick={() => handleOpenQuestionEditor(null)}
-              disabled={questions.length === 0}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200/80 text-xs font-bold transition shadow-2xs cursor-pointer disabled:opacity-50"
-              title="Open Visual Question Editor & Live LaTeX Fixer"
+              onClick={() => setViewMode(viewMode === 'split' ? 'document' : 'split')}
+              className={`p-2 rounded-lg border text-xs transition cursor-pointer ${
+                viewMode === 'split'
+                  ? 'bg-blue-50 text-blue-700 border-blue-200'
+                  : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
+              }`}
+              title={viewMode === 'split' ? 'Hide Quiz Input Box' : 'Show Quiz Input Box'}
             >
-              <Edit3 className="w-3.5 h-3.5 text-indigo-600" />
-              <span>Visual Editor</span>
+              <LayoutGrid className="w-4 h-4" />
             </button>
 
-            {/* Save / Load / Export Files Button */}
-            <button
-              type="button"
-              onClick={() => setIsSavedExamsOpen(true)}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white hover:bg-slate-50 text-slate-700 border border-slate-200/90 text-xs font-bold transition shadow-2xs cursor-pointer"
-              title="Save, Load, Export (.json/.txt) or Import Exam Papers"
-            >
-              <FolderOpen className="w-3.5 h-3.5 text-amber-500" />
-              <span>Save / Files</span>
-            </button>
-
-            {/* Copy Prompt Button */}
-            <button
-              type="button"
-              onClick={() => setIsPromptModalOpen(true)}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition shadow-xs cursor-pointer active:scale-95"
-            >
-              <Copy className="w-3.5 h-3.5" />
-              <span>Copy AI Prompt</span>
-            </button>
-
-            {/* Paste Button */}
-            <button
-              type="button"
-              onClick={handlePasteFromClipboard}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white hover:bg-slate-50 text-slate-700 border border-slate-200/90 text-xs font-bold transition shadow-2xs cursor-pointer active:scale-95"
-              title="Paste quiz code from clipboard"
-            >
-              <ClipboardPaste className="w-3.5 h-3.5 text-blue-600" />
-              <span className="hidden md:inline">Paste</span>
-            </button>
-
-            {/* Sample Selector Dropdown */}
+            {/* Presets Dropdown (Icon Trigger) */}
             <div className="relative group">
               <button
                 type="button"
-                className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-white hover:bg-slate-50 text-slate-700 border border-slate-200/90 text-xs font-semibold transition shadow-2xs cursor-pointer"
+                className="p-2 rounded-lg bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 transition cursor-pointer"
+                title="Load Preset Sample Papers"
               >
-                <BookOpen className="w-3.5 h-3.5 text-amber-500" />
-                <span className="hidden xl:inline">Presets</span>
-                <ChevronDown className="w-3 h-3 text-slate-400" />
+                <BookOpen className="w-4 h-4 text-amber-500" />
               </button>
 
-              <div className="absolute right-0 mt-1.5 w-64 bg-white border border-slate-200 rounded-xl shadow-xl py-1.5 z-50 hidden group-hover:block hover:block">
+              <div className="absolute right-0 mt-1.5 w-60 bg-white border border-slate-200 rounded-xl shadow-xl py-1.5 z-50 hidden group-hover:block hover:block">
+                <div className="px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-400 border-b border-slate-100">
+                  Preset Sample Papers
+                </div>
                 <button
                   type="button"
                   onClick={() => handleLoadSample('ramraman100')}
-                  className="w-full text-left px-3.5 py-2 text-xs text-slate-700 hover:bg-blue-50/60 flex flex-col border-b border-slate-100 cursor-pointer"
+                  className="w-full text-left px-3 py-2 text-xs text-slate-700 hover:bg-blue-50/60 flex flex-col border-b border-slate-100 cursor-pointer"
                 >
-                  <span className="font-bold text-amber-700 flex items-center gap-1">
-                    <span>⚡ राम रमन 100 प्रश्न OMR टेस्ट</span>
-                  </span>
+                  <span className="font-bold text-amber-700">⚡ राम रमन 100 प्रश्न OMR टेस्ट</span>
                   <span className="text-[10px] text-slate-500">100 Questions Full Paper &amp; OMR</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => handleLoadSample('bhimbetka')}
-                  className="w-full text-left px-3.5 py-2 text-xs text-slate-700 hover:bg-slate-50 flex flex-col cursor-pointer"
+                  className="w-full text-left px-3 py-2 text-xs text-slate-700 hover:bg-slate-50 flex flex-col cursor-pointer"
                 >
                   <span className="font-bold text-slate-800">भीमबेटका की गुफाएँ</span>
                   <span className="text-[10px] text-slate-500">20 History Questions in Hindi</span>
@@ -590,103 +587,215 @@ export default function App() {
                 <button
                   type="button"
                   onClick={() => handleLoadSample('math')}
-                  className="w-full text-left px-3.5 py-2 text-xs text-slate-700 hover:bg-slate-50 flex flex-col border-t border-slate-100 cursor-pointer"
+                  className="w-full text-left px-3 py-2 text-xs text-slate-700 hover:bg-slate-50 flex flex-col border-t border-slate-100 cursor-pointer"
                 >
                   <span className="font-bold text-blue-700">Mathematics &amp; Trigonometry</span>
-                  <span className="text-[10px] text-slate-500">20 Rich LaTeX Formula Questions</span>
+                  <span className="text-[10px] text-slate-500">20 LaTeX Formula Questions</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => handleLoadSample('physics')}
-                  className="w-full text-left px-3.5 py-2 text-xs text-slate-700 hover:bg-slate-50 flex flex-col border-t border-slate-100 cursor-pointer"
+                  className="w-full text-left px-3 py-2 text-xs text-slate-700 hover:bg-slate-50 flex flex-col border-t border-slate-100 cursor-pointer"
                 >
                   <span className="font-bold text-emerald-700">Physics &amp; Chemistry</span>
-                  <span className="text-[10px] text-slate-500">Kinematics, Formulas &amp; Equations</span>
+                  <span className="text-[10px] text-slate-500">Kinematics &amp; Equations</span>
                 </button>
               </div>
             </div>
 
-            {/* Settings Drawer Button */}
+            {/* Visual Question Editor (Icon Button) */}
+            <button
+              type="button"
+              onClick={() => handleOpenQuestionEditor(null)}
+              disabled={questions.length === 0}
+              className="p-2 rounded-lg bg-white hover:bg-indigo-50 text-indigo-600 border border-slate-200 transition cursor-pointer disabled:opacity-40"
+              title="Visual Question Editor & Live LaTeX Fixer"
+            >
+              <Edit3 className="w-4 h-4" />
+            </button>
+
+            {/* Save / Load / Export Files (Icon Button) */}
+            <button
+              type="button"
+              onClick={() => setIsSavedExamsOpen(true)}
+              className="p-2 rounded-lg bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 transition cursor-pointer"
+              title="Save, Load & Export Exam Files (.json / .txt)"
+            >
+              <FolderOpen className="w-4 h-4 text-amber-500" />
+            </button>
+
+            {/* 2-Column vs 1-Column Toggle */}
+            <button
+              type="button"
+              onClick={() =>
+                setMetadata((prev) => ({
+                  ...prev,
+                  twoColumnLayout: !prev.twoColumnLayout,
+                }))
+              }
+              className={`px-2 py-1.5 rounded-lg text-[11px] font-bold border transition cursor-pointer ${
+                metadata.twoColumnLayout
+                  ? 'bg-indigo-50 border-indigo-200 text-indigo-700'
+                  : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
+              }`}
+              title="Toggle 2-Column or 1-Column Question Paper Layout"
+            >
+              {metadata.twoColumnLayout ? '2-Col' : '1-Col'}
+            </button>
+
+            {/* Color vs B&W Laser Ink Toggle (Icon Button) */}
+            <button
+              type="button"
+              onClick={() => setInkMode((m) => (m === 'color' ? 'bw' : 'color'))}
+              className={`p-2 rounded-lg border transition cursor-pointer ${
+                inkMode === 'bw'
+                  ? 'bg-slate-800 border-slate-800 text-white'
+                  : 'bg-white border-slate-200 text-blue-600 hover:bg-slate-50'
+              }`}
+              title={inkMode === 'bw' ? 'B&W Laser Ink Active (Click for Color)' : 'Color Ink Active (Click for B&W Laser)'}
+            >
+              {inkMode === 'bw' ? <Contrast className="w-4 h-4" /> : <Palette className="w-4 h-4" />}
+            </button>
+
+            {/* Settings Drawer (Icon Button) */}
             <button
               type="button"
               onClick={() => setIsSettingsOpen(true)}
-              className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white hover:bg-slate-50 text-slate-700 border border-slate-200/90 text-xs font-semibold transition shadow-2xs cursor-pointer"
+              className="p-2 rounded-lg bg-white hover:bg-slate-50 text-slate-600 border border-slate-200 transition cursor-pointer"
+              title="Exam Paper & OMR Settings"
             >
-              <Sliders className="w-3.5 h-3.5 text-slate-500" />
-              <span className="hidden lg:inline">Settings</span>
+              <Sliders className="w-4 h-4" />
             </button>
 
-            {/* Separate Print Mode Dropdown & Print Button */}
+            {/* Consolidated Print PDF & All Pages Selector Dropdown */}
             <div className="relative group">
-              <div className="inline-flex rounded-lg shadow-xs overflow-hidden">
+              <div className="inline-flex rounded-lg shadow-2xs overflow-hidden">
                 <button
                   type="button"
                   onClick={() => handlePrintWithMode()}
                   disabled={questions.length === 0}
-                  className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition cursor-pointer disabled:opacity-50"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition cursor-pointer disabled:opacity-50"
+                  title="Print currently selected pages"
                 >
-                  <Printer className="w-4 h-4" />
+                  <Printer className="w-3.5 h-3.5" />
                   <span>Print PDF</span>
+                  <span className="hidden md:inline text-[10px] font-medium bg-emerald-700/80 px-1.5 py-0.2 rounded">
+                    {activeTab === 'practice' ? 'Practice' : printTargetShortLabels[printTarget]}
+                  </span>
                 </button>
                 <button
                   type="button"
                   disabled={questions.length === 0}
                   className="px-2 py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white border-l border-emerald-500 text-xs font-bold transition cursor-pointer"
-                  title="Select what to print"
+                  title="Select pages to view or print"
                 >
                   <ChevronDown className="w-3.5 h-3.5" />
                 </button>
               </div>
 
-              {/* Dropdown Menu for Separate Print Modes */}
-              <div className="absolute right-0 mt-1.5 w-64 bg-white border border-slate-200 rounded-xl shadow-xl py-1.5 z-50 hidden group-hover:block hover:block">
-                <div className="px-3.5 py-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-400 border-b border-slate-100">
-                  Selective Print Mode (One-Click)
+              {/* All Page View & Print Options Shifted Under Print PDF Dropdown */}
+              <div className="absolute right-0 mt-1.5 w-72 bg-white border border-slate-200 rounded-xl shadow-xl py-1.5 z-50 hidden group-hover:block hover:block">
+                <div className="px-3.5 py-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-400 border-b border-slate-100 flex items-center justify-between">
+                  <span>Select Pages (View &amp; Print)</span>
+                  <span>Click 🖨️ to Print</span>
                 </div>
+
                 {(
                   [
                     {
                       id: 'full',
-                      title: 'Print Complete Exam Pack',
+                      tab: 'preview',
+                      title: 'Full Pack (All Pages)',
                       desc: 'Page 1 OMR + Question Paper + Answer Key',
                     },
                     {
                       id: 'student_pack',
-                      title: 'Print Student Copy (No Key)',
-                      desc: 'OMR Sheet + Question Paper Only',
+                      tab: 'preview',
+                      title: 'Student Copy (OMR + Paper)',
+                      desc: 'OMR Sheet + Question Paper (No Key)',
                     },
                     {
                       id: 'omr_only',
-                      title: 'Print Only OMR Sheet',
-                      desc: 'Page 1 OMR Response Sheet (1-100)',
+                      tab: 'omr',
+                      title: 'Only OMR Sheet',
+                      desc: 'Page 1 OMR Response Sheet Only',
                     },
                     {
                       id: 'paper_only',
-                      title: 'Print Only Question Paper',
+                      tab: 'paper',
+                      title: 'Only Question Paper',
                       desc: 'MCQ Question Booklet Pages Only',
                     },
                     {
                       id: 'key_only',
-                      title: 'Print Only Answer Key',
-                      desc: 'Last Page Evaluation Answer Key Only',
+                      tab: 'answers',
+                      title: 'Only Answer Key',
+                      desc: 'Last Page Official Answer Key Only',
                     },
-                  ] as Array<{ id: PrintTarget; title: string; desc: string }>
-                ).map((item) => (
+                  ] as Array<{
+                    id: PrintTarget;
+                    tab: 'preview' | 'omr' | 'paper' | 'answers';
+                    title: string;
+                    desc: string;
+                  }>
+                ).map((item) => {
+                  const isCurrent =
+                    activeTab !== 'practice' && printTarget === item.id;
+                  return (
+                    <div
+                      key={item.id}
+                      className={`flex items-center justify-between px-3 py-2 border-b border-slate-100 last:border-none transition ${
+                        isCurrent ? 'bg-emerald-50/70' : 'hover:bg-slate-50'
+                      }`}
+                    >
+                      <button
+                        type="button"
+                        onClick={() => handleSelectPageMode(item.id, item.tab)}
+                        className="flex-1 text-left pr-2 cursor-pointer"
+                      >
+                        <div
+                          className={`text-xs font-bold flex items-center gap-1.5 ${
+                            isCurrent ? 'text-emerald-800' : 'text-slate-700'
+                          }`}
+                        >
+                          <span>{item.title}</span>
+                          {isCurrent && <Check className="w-3.5 h-3.5 text-emerald-600" />}
+                        </div>
+                        <div className="text-[10px] text-slate-500">{item.desc}</div>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => handlePrintWithMode(item.id)}
+                        className="p-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white shadow-2xs transition cursor-pointer shrink-0"
+                        title={`Print ${item.title} Now`}
+                      >
+                        <Printer className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  );
+                })}
+
+                {/* Interactive Practice OMR Option inside Pages Dropdown */}
+                <div className="border-t border-slate-200 mt-1 pt-1 px-2">
                   <button
-                    key={item.id}
                     type="button"
-                    onClick={() => handlePrintWithMode(item.id)}
-                    className={`w-full text-left px-3.5 py-2 text-xs hover:bg-slate-50 flex flex-col border-b border-slate-100 last:border-none cursor-pointer ${
-                      printTarget === item.id ? 'bg-emerald-50/70 text-emerald-800' : 'text-slate-700'
+                    onClick={() =>
+                      setActiveTab(activeTab === 'practice' ? 'preview' : 'practice')
+                    }
+                    className={`w-full text-left px-2.5 py-2 rounded-lg text-xs flex items-center justify-between cursor-pointer transition ${
+                      activeTab === 'practice'
+                        ? 'bg-purple-600 text-white font-bold'
+                        : 'text-purple-700 hover:bg-purple-50 font-semibold'
                     }`}
                   >
-                    <span className="font-bold flex items-center justify-between">
-                      <span>{item.title}</span>
-                      {printTarget === item.id && <Check className="w-3.5 h-3.5 text-emerald-600" />}
+                    <span className="flex items-center gap-1.5">
+                      <GraduationCap className="w-4 h-4" />
+                      <span>Interactive Practice OMR Mode</span>
                     </span>
-                    <span className="text-[10px] text-slate-500">{item.desc}</span>
+                    {activeTab === 'practice' && <Check className="w-3.5 h-3.5" />}
                   </button>
-                ))}
+                </div>
               </div>
             </div>
           </div>
@@ -694,7 +803,7 @@ export default function App() {
 
         {/* Status notification toast */}
         {copiedStatus && (
-          <div className="bg-emerald-600 text-white text-center text-xs py-1.5 font-semibold flex items-center justify-center gap-1.5 shadow-inner">
+          <div className="bg-emerald-600 text-white text-center text-xs py-1 font-semibold flex items-center justify-center gap-1.5 shadow-inner">
             <Check className="w-3.5 h-3.5" />
             {copiedStatus}
           </div>
@@ -702,141 +811,10 @@ export default function App() {
       </nav>
 
       {/* ========================================================
-          SUB-HEADER: VIEW CONTROLS & PRINT FILTER (NO-PRINT)
-      ======================================================== */}
-      <div className="no-print bg-slate-50/90 border-b border-slate-200/80 px-4 sm:px-6 py-2">
-        <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3 text-xs">
-          {/* Tabs for previewing specific parts */}
-          <div className="flex flex-wrap items-center gap-1 bg-slate-200/70 p-1 rounded-xl border border-slate-200/90">
-            <button
-              type="button"
-              onClick={() => {
-                setActiveTab('preview');
-                setPrintTarget('full');
-              }}
-              className={`px-3 py-1.5 rounded-lg font-semibold transition cursor-pointer ${
-                activeTab === 'preview' && printTarget === 'full'
-                  ? 'bg-white text-blue-700 shadow-2xs ring-1 ring-slate-900/5'
-                  : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              Full Pack (All Pages)
-            </button>
-
-            <button
-              type="button"
-              onClick={() => {
-                setActiveTab('preview');
-                setPrintTarget('student_pack');
-              }}
-              className={`px-3 py-1.5 rounded-lg font-semibold transition cursor-pointer ${
-                activeTab === 'preview' && printTarget === 'student_pack'
-                  ? 'bg-white text-blue-700 shadow-2xs ring-1 ring-slate-900/5'
-                  : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              Student Copy (OMR + Paper)
-            </button>
-
-            <button
-              type="button"
-              onClick={() => {
-                setActiveTab('omr');
-                setPrintTarget('omr_only');
-              }}
-              className={`px-3 py-1.5 rounded-lg font-semibold transition cursor-pointer ${
-                activeTab === 'omr'
-                  ? 'bg-white text-blue-700 shadow-2xs ring-1 ring-slate-900/5'
-                  : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              Only OMR Sheet
-            </button>
-
-            <button
-              type="button"
-              onClick={() => {
-                setActiveTab('paper');
-                setPrintTarget('paper_only');
-              }}
-              className={`px-3 py-1.5 rounded-lg font-semibold transition cursor-pointer ${
-                activeTab === 'paper'
-                  ? 'bg-white text-blue-700 shadow-2xs ring-1 ring-slate-900/5'
-                  : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              Only Question Paper
-            </button>
-
-            <button
-              type="button"
-              onClick={() => {
-                setActiveTab('answers');
-                setPrintTarget('key_only');
-              }}
-              className={`px-3 py-1.5 rounded-lg font-semibold transition cursor-pointer ${
-                activeTab === 'answers'
-                  ? 'bg-white text-blue-700 shadow-2xs ring-1 ring-slate-900/5'
-                  : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              Only Answer Key
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setActiveTab('practice')}
-              className={`px-3 py-1.5 rounded-lg font-semibold transition flex items-center gap-1 cursor-pointer ${
-                activeTab === 'practice'
-                  ? 'bg-purple-600 text-white shadow-2xs'
-                  : 'text-purple-700 hover:bg-purple-100/70'
-              }`}
-            >
-              <GraduationCap className="w-3.5 h-3.5" />
-              <span>Practice OMR</span>
-            </button>
-          </div>
-
-          {/* Question Stats & Layout */}
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-1.5 font-medium">
-              {parseResult.error ? (
-                <span className="inline-flex items-center gap-1 text-amber-800 bg-amber-50 px-2.5 py-1 rounded-md border border-amber-200">
-                  <AlertCircle className="w-3.5 h-3.5 text-amber-600" />
-                  Format Warning
-                </span>
-              ) : (
-                <span className="inline-flex items-center gap-1 text-emerald-800 bg-emerald-50 px-2.5 py-1 rounded-md border border-emerald-200/80">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-                  <strong>{questions.length}</strong> Questions Ready
-                </span>
-              )}
-            </div>
-
-            {/* Toggle Show/Hide Top Input Box */}
-            <div className="hidden sm:flex items-center gap-1 text-slate-500 border-l border-slate-200 pl-3">
-              <button
-                type="button"
-                onClick={() => setViewMode(viewMode === 'split' ? 'document' : 'split')}
-                className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-semibold cursor-pointer transition border ${
-                  viewMode === 'split'
-                    ? 'bg-white text-slate-800 border-slate-300 shadow-2xs'
-                    : 'bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100'
-                }`}
-                title="Show or hide the top Quiz Input Data Box"
-              >
-                <LayoutGrid className="w-3.5 h-3.5" />
-                <span>{viewMode === 'split' ? 'Hide Input Box' : 'Show Input Box'}</span>
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* ========================================================
           MAIN WORKSPACE (TOP INPUT BOX + BOTTOM DOCUMENT PREVIEW)
+          Both share the exact same max-w-5xl w-full width!
       ======================================================== */}
-      <div className="max-w-7xl w-full mx-auto p-4 sm:p-6 flex-1 flex flex-col">
+      <div className="max-w-5xl w-full mx-auto p-4 sm:p-6 flex-1 flex flex-col">
         {/* Practice Mode Scoreboard Banner */}
         {activeTab === 'practice' && (
           <div className="no-print mb-4 bg-gradient-to-r from-purple-900 to-indigo-900 text-white rounded-xl p-4 shadow-lg flex flex-wrap items-center justify-between gap-4">
@@ -852,63 +830,55 @@ export default function App() {
               </p>
             </div>
 
-            <div className="flex items-center gap-4 text-xs font-mono">
-              <div className="bg-purple-950/60 border border-purple-700/50 px-3 py-1.5 rounded-lg text-center">
+            <div className="flex items-center gap-3 text-xs font-mono">
+              <div className="bg-purple-950/60 border border-purple-700/50 px-3 py-1 rounded-lg text-center">
                 <span className="block text-[10px] text-purple-300 uppercase">Correct</span>
-                <span className="text-base font-bold text-emerald-400">+{practiceScore.correct}</span>
+                <span className="text-sm font-bold text-emerald-400">+{practiceScore.correct}</span>
               </div>
-              <div className="bg-purple-950/60 border border-purple-700/50 px-3 py-1.5 rounded-lg text-center">
+              <div className="bg-purple-950/60 border border-purple-700/50 px-3 py-1 rounded-lg text-center">
                 <span className="block text-[10px] text-purple-300 uppercase">Wrong</span>
-                <span className="text-base font-bold text-rose-400">-{practiceScore.incorrect}</span>
+                <span className="text-sm font-bold text-rose-400">-{practiceScore.incorrect}</span>
               </div>
-              <div className="bg-purple-950/60 border border-purple-700/50 px-3 py-1.5 rounded-lg text-center">
-                <span className="block text-[10px] text-purple-300 uppercase">Unanswered</span>
-                <span className="text-base font-bold text-slate-300">{practiceScore.unattempted}</span>
-              </div>
-              <div className="bg-white text-purple-950 px-4 py-1.5 rounded-lg text-center shadow">
-                <span className="block text-[10px] font-bold uppercase text-purple-700">Total Marks</span>
-                <span className="text-base font-black text-purple-900">
+              <div className="bg-white text-purple-950 px-3 py-1 rounded-lg text-center shadow">
+                <span className="block text-[10px] font-bold uppercase text-purple-700">Score</span>
+                <span className="text-sm font-black text-purple-900">
                   {practiceScore.totalScore} / {practiceScore.maxScore}
                 </span>
               </div>
               <button
                 type="button"
                 onClick={() => setUserAnswers({})}
-                className="text-xs text-purple-200 hover:text-white underline cursor-pointer"
+                className="p-1.5 text-purple-200 hover:text-white hover:bg-purple-800/50 rounded-lg cursor-pointer"
+                title="Reset Practice Answers"
               >
-                Reset Answers
+                <RotateCcw className="w-4 h-4" />
               </button>
             </div>
           </div>
         )}
 
-        <div className="flex flex-col gap-6 w-full">
+        <div className="flex flex-col gap-5 w-full">
           {/* ----------------------------------------------------
-              TOP PANEL: QUIZ INPUT DATA BOX & CODE EDITOR (NO-PRINT)
-              (Supports .txt / .json file Upload & Drag-and-Drop)
+              TOP PANEL: MINIMAL QUIZ INPUT DATA BOX (NO-PRINT)
+              (Icon-only actions + White background textarea)
           ---------------------------------------------------- */}
           {viewMode === 'split' && (
             <div
               onDragOver={handleDragOver}
               onDragLeave={handleDragLeave}
               onDrop={handleDrop}
-              className={`no-print w-full flex flex-col bg-white rounded-2xl border transition-all shadow-xs overflow-hidden relative ${
+              className={`no-print w-full flex flex-col bg-white rounded-xl border transition-all shadow-2xs overflow-hidden relative ${
                 isDraggingFile
                   ? 'border-blue-600 ring-4 ring-blue-500/20 bg-blue-50/20'
-                  : 'border-slate-200/90'
+                  : 'border-slate-300'
               }`}
             >
               {/* Drag-and-Drop Visual Overlay */}
               {isDraggingFile && (
                 <div className="absolute inset-0 z-30 bg-blue-950/80 backdrop-blur-xs flex flex-col items-center justify-center text-white p-6 text-center pointer-events-none">
-                  <div className="w-14 h-14 rounded-2xl bg-blue-600 flex items-center justify-center mb-3 shadow-lg border border-blue-400">
-                    <Upload className="w-7 h-7 text-white animate-bounce" />
-                  </div>
-                  <p className="text-base font-extrabold tracking-wide">
+                  <Upload className="w-8 h-8 text-white animate-bounce mb-2" />
+                  <p className="text-sm font-extrabold tracking-wide">
                     Drop your .txt or .json file here
-                  </p>
-                  <p className="text-xs text-blue-200 mt-1">
-                    Questions will automatically load into the editor
                   </p>
                 </div>
               )}
@@ -922,274 +892,159 @@ export default function App() {
                 className="hidden"
               />
 
-              {/* Input Header */}
-              <div className="px-4 py-3 bg-gradient-to-r from-slate-50 via-white to-blue-50/40 border-b border-slate-200/90 flex flex-wrap items-center justify-between gap-2">
-                <div>
+              {/* Compact Minimal Input Header with Icon Toolbar */}
+              <div className="px-3.5 py-2 bg-slate-50 border-b border-slate-200 flex flex-wrap items-center justify-between gap-2">
+                <div className="flex items-center gap-2.5">
                   <h3 className="font-bold text-slate-800 text-xs uppercase tracking-wider flex items-center gap-1.5">
                     <FileText className="w-3.5 h-3.5 text-blue-600" />
-                    Quiz Input Data Box
+                    <span>Quiz Input Box</span>
                   </h3>
-                  <p className="text-[11px] text-slate-500">
-                    Paste, upload, or drag &amp; drop a <code className="text-slate-700 font-semibold">.txt</code> file here
-                  </p>
+
+                  {questions.length > 0 && (
+                    <span
+                      className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-white border border-slate-200 text-[10px] font-mono font-bold text-slate-600"
+                      title="Live answer distribution across options A, B, C, and D"
+                    >
+                      <span className="text-blue-700">A:{answerDistribution.A}</span>
+                      <span className="text-emerald-700">B:{answerDistribution.B}</span>
+                      <span className="text-amber-700">C:{answerDistribution.C}</span>
+                      <span className="text-purple-700">D:{answerDistribution.D}</span>
+                    </span>
+                  )}
                 </div>
 
-                <div className="flex items-center flex-wrap gap-1.5">
+                {/* Minimal Icon Action Buttons */}
+                <div className="flex items-center gap-1">
+                  {/* AI Prompt Modal Icon Button */}
+                  <button
+                    type="button"
+                    onClick={() => setIsPromptModalOpen(true)}
+                    className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-md transition cursor-pointer"
+                    title="AI Prompt Generator"
+                  >
+                    <Sparkles className="w-4 h-4" />
+                  </button>
+
+                  {/* Upload .txt / .json Icon Button */}
                   <button
                     type="button"
                     onClick={() => txtFileInputRef.current?.click()}
-                    className="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-bold bg-blue-600 hover:bg-blue-700 text-white rounded-md border border-blue-700 transition cursor-pointer shadow-2xs"
-                    title="Upload a .txt or .json quiz file from your computer"
+                    className="p-1.5 text-slate-600 hover:text-blue-600 hover:bg-slate-200/70 rounded-md transition cursor-pointer"
+                    title="Upload .txt or .json file"
                   >
-                    <Upload className="w-3 h-3" />
-                    <span>Upload .txt</span>
+                    <Upload className="w-4 h-4" />
                   </button>
+
+                  {/* Copy Quiz Input Data Icon Button */}
                   <button
                     type="button"
-                    onClick={() => handleOpenQuestionEditor(null)}
-                    disabled={questions.length === 0}
-                    className="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-bold bg-indigo-50 hover:bg-indigo-100 text-indigo-800 rounded-md border border-indigo-200 transition cursor-pointer disabled:opacity-50"
-                    title="Edit questions visually with live LaTeX preview"
+                    onClick={handleCopyInputToClipboard}
+                    className="p-1.5 text-slate-600 hover:text-blue-600 hover:bg-slate-200/70 rounded-md transition cursor-pointer"
+                    title="Copy quiz input text"
                   >
-                    <Edit3 className="w-3 h-3 text-indigo-600" />
-                    <span>Visual Edit</span>
+                    <Copy className="w-4 h-4" />
                   </button>
-                  <button
-                    type="button"
-                    onClick={handleRandomizeAllQuestions}
-                    disabled={questions.length === 0}
-                    className="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-bold bg-emerald-600 hover:bg-emerald-700 text-white rounded-md border border-emerald-700 transition cursor-pointer shadow-2xs disabled:opacity-50"
-                    title="Purely randomize question order AND randomly shuffle all 4 options (A, B, C, D)"
-                  >
-                    <Shuffle className="w-3 h-3" />
-                    <span>Randomize All</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleBalanceOptions}
-                    disabled={questions.length === 0}
-                    className="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-bold bg-white hover:bg-slate-50 text-slate-800 rounded-md border border-slate-300 transition cursor-pointer shadow-2xs disabled:opacity-50"
-                    title="Keep question order and purely shuffle all 4 options (A, B, C, D) at random"
-                  >
-                    <RefreshCw className="w-3 h-3 text-emerald-600" />
-                    <span>Shuffle Options</span>
-                  </button>
+
+                  {/* Paste from Clipboard Icon Button */}
                   <button
                     type="button"
                     onClick={handlePasteFromClipboard}
-                    className="p-1.5 text-slate-600 hover:text-blue-600 hover:bg-slate-100 rounded-md transition cursor-pointer"
+                    className="p-1.5 text-slate-600 hover:text-blue-600 hover:bg-slate-200/70 rounded-md transition cursor-pointer"
                     title="Paste from clipboard"
                   >
                     <ClipboardPaste className="w-4 h-4" />
                   </button>
+
+                  {/* Shuffle Options (A, B, C, D) Icon Button */}
+                  <button
+                    type="button"
+                    onClick={handleBalanceOptions}
+                    disabled={questions.length === 0}
+                    className="p-1.5 text-emerald-600 hover:bg-emerald-50 rounded-md transition cursor-pointer disabled:opacity-40"
+                    title="Shuffle Options (A, B, C, D)"
+                  >
+                    <RefreshCw className="w-4 h-4" />
+                  </button>
+
+                  {/* Randomize All Questions & Options Icon Button */}
+                  <button
+                    type="button"
+                    onClick={handleRandomizeAllQuestions}
+                    disabled={questions.length === 0}
+                    className="p-1.5 text-indigo-600 hover:bg-indigo-50 rounded-md transition cursor-pointer disabled:opacity-40"
+                    title="Randomize All Questions & Options"
+                  >
+                    <Shuffle className="w-4 h-4" />
+                  </button>
+
+                  {/* Clear Input Box Icon Button */}
                   <button
                     type="button"
                     onClick={() => setInputText('')}
                     className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-md transition cursor-pointer"
-                    title="Clear input"
+                    title="Clear input box"
                   >
                     <RotateCcw className="w-4 h-4" />
                   </button>
                 </div>
               </div>
 
-              {/* Textarea Code Box (White Background) */}
-              <div className="relative p-3.5 bg-slate-50/50">
+              {/* White Background Textarea */}
+              <div className="p-2.5 bg-white">
                 <textarea
                   id="quiz-input-textarea"
                   value={inputText}
                   onChange={(e) => setInputText(e.target.value)}
                   placeholder={`Paste quiz objects here or drag & drop a .txt file:\n{ q: "यदि $z = \\cos\\theta + i\\sin\\theta$ है, तो $z^n + z^{-n}$ किसके बराबर है?", o: ["$2\\sin(n\\theta)$", "$2i\\sin(n\\theta)$", "$2\\cos(n\\theta)$", "$2i\\cos(n\\theta)$"], a: 2 },`}
-                  className="w-full h-44 sm:h-52 p-3.5 text-xs font-mono bg-white text-slate-900 border border-slate-300 rounded-xl shadow-2xs placeholder:text-slate-400 focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 resize-y leading-relaxed overflow-y-auto"
+                  className="w-full h-36 sm:h-40 p-3 text-xs font-mono bg-white text-slate-900 border border-slate-200 rounded-lg placeholder:text-slate-400 focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 resize-y leading-relaxed overflow-y-auto"
                   spellCheck={false}
                 />
-              </div>
-
-              {/* Input Footer & Answer Distribution Helper */}
-              <div className="px-4 py-2.5 bg-slate-50/90 border-t border-slate-200/90 text-xs text-slate-600 flex flex-wrap items-center justify-between gap-2">
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="font-bold text-slate-900">{questions.length} Qs</span>
-                  {questions.length > 0 && (
-                    <span
-                      className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md bg-white border border-slate-200 text-[11px] font-mono font-bold text-slate-700 shadow-2xs"
-                      title="Live distribution of correct answers across options A, B, C, and D"
-                    >
-                      <span className="text-blue-700">A:{answerDistribution.A}</span>
-                      <span className="text-slate-300">•</span>
-                      <span className="text-emerald-700">B:{answerDistribution.B}</span>
-                      <span className="text-slate-300">•</span>
-                      <span className="text-amber-700">C:{answerDistribution.C}</span>
-                      <span className="text-slate-300">•</span>
-                      <span className="text-purple-700">D:{answerDistribution.D}</span>
-                    </span>
-                  )}
-                </div>
-
-                <button
-                  type="button"
-                  onClick={() => setIsPromptModalOpen(true)}
-                  className="text-blue-600 hover:text-blue-800 font-bold hover:underline flex items-center gap-1 cursor-pointer"
-                >
-                  <Sparkles className="w-3.5 h-3.5" />
-                  Need Questions? Copy AI Prompt
-                </button>
               </div>
             </div>
           )}
 
           {/* ----------------------------------------------------
-              BOTTOM PANEL: DOCUMENT PREVIEW (PRINTABLE CONTAINER)
+              BOTTOM PANEL: DOCUMENT PREVIEW (SAME WIDTH AS INPUT BOX)
           ---------------------------------------------------- */}
           <div className="w-full flex flex-col">
-            {/* Action Bar Above Preview (NO-PRINT) */}
-            <div className="no-print mb-4 flex flex-wrap items-center justify-between gap-2 bg-white p-3 rounded-2xl border border-slate-200/90 shadow-xs text-xs">
-              {/* Selective Print Target */}
-              <div className="flex items-center gap-2">
-                <span className="text-slate-500 font-semibold">Print Mode:</span>
-                <select
-                  value={printTarget}
-                  onChange={(e) => {
-                    const mode = e.target.value as PrintTarget;
-                    setPrintTarget(mode);
-                    setActiveTab('preview');
-                  }}
-                  className="font-bold text-indigo-950 bg-indigo-50/70 border border-indigo-200 rounded-lg px-2.5 py-1.5 text-xs focus:outline-hidden focus:ring-2 focus:ring-indigo-500 cursor-pointer"
-                >
-                  <option value="full">{printTargetLabels.full}</option>
-                  <option value="student_pack">{printTargetLabels.student_pack}</option>
-                  <option value="omr_only">{printTargetLabels.omr_only}</option>
-                  <option value="paper_only">{printTargetLabels.paper_only}</option>
-                  <option value="key_only">{printTargetLabels.key_only}</option>
-                </select>
-              </div>
-
-              {/* Printer Ink Toggle + Zoom + 2-Column Controls */}
-              <div className="flex flex-wrap items-center gap-1.5">
-                {/* 1-Click Color vs B&W Laser Printer Toggle */}
-                <button
-                  type="button"
-                  onClick={() => setInkMode((m) => (m === 'color' ? 'bw' : 'color'))}
-                  className={`inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-bold border transition cursor-pointer ${
-                    inkMode === 'bw'
-                      ? 'bg-slate-800 border-slate-800 text-white'
-                      : 'bg-blue-50 border-blue-200 text-blue-900 hover:bg-blue-100'
-                  }`}
-                  title="Switch between Deep Color Ink and Pure B&W Laser Printer mode"
-                >
-                  {inkMode === 'bw' ? (
-                    <>
-                      <Contrast className="w-3.5 h-3.5" />
-                      <span>B&amp;W Laser Ink</span>
-                    </>
-                  ) : (
-                    <>
-                      <Palette className="w-3.5 h-3.5 text-blue-600" />
-                      <span>Color Ink</span>
-                    </>
-                  )}
-                </button>
-
-                {/* 2-Column Mode Toggle */}
-                <button
-                  type="button"
-                  onClick={() =>
-                    setMetadata((prev) => ({
-                      ...prev,
-                      twoColumnLayout: !prev.twoColumnLayout,
-                    }))
-                  }
-                  className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold border transition cursor-pointer ${
-                    metadata.twoColumnLayout
-                      ? 'bg-indigo-50 border-indigo-300 text-indigo-800'
-                      : 'bg-slate-50 border-slate-300 text-slate-700'
-                  }`}
-                  title="Toggle 2-column or 1-column layout for question paper"
-                >
-                  {metadata.twoColumnLayout ? '2-Col' : '1-Col'}
-                </button>
-
-                {/* Zoom Controls */}
-                <div className="hidden sm:inline-flex items-center border border-slate-200 rounded-lg bg-slate-50">
-                  <button
-                    type="button"
-                    onClick={() => setZoomLevel((z) => Math.max(80, z - 10))}
-                    className="p-1.5 text-slate-600 hover:text-slate-900 cursor-pointer"
-                    title="Zoom Out"
-                  >
-                    <ZoomOut className="w-3.5 h-3.5" />
-                  </button>
-                  <span className="px-1.5 font-mono font-bold text-[11px] text-slate-700 tabular-nums">
-                    {zoomLevel}%
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => setZoomLevel((z) => Math.min(115, z + 10))}
-                    className="p-1.5 text-slate-600 hover:text-slate-900 cursor-pointer"
-                    title="Zoom In"
-                  >
-                    <ZoomIn className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={() => handlePrintWithMode()}
-                  className="inline-flex items-center gap-1 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg shadow-2xs cursor-pointer"
-                >
-                  <Printer className="w-3.5 h-3.5" />
-                  <span>Print</span>
-                </button>
-              </div>
-            </div>
-
-            {/* Empty state warning if no questions */}
             {questions.length === 0 ? (
-              <div className="bg-white rounded-2xl border border-dashed border-slate-300 p-12 text-center text-slate-500 shadow-2xs">
-                <AlertCircle className="w-12 h-12 text-slate-300 mx-auto mb-3" />
-                <h4 className="font-bold text-slate-700 text-base mb-1">
+              <div className="bg-white rounded-xl border border-dashed border-slate-300 p-10 text-center text-slate-500 shadow-2xs w-full">
+                <AlertCircle className="w-10 h-10 text-slate-300 mx-auto mb-2" />
+                <h4 className="font-bold text-slate-700 text-sm mb-1">
                   No Questions Detected
                 </h4>
                 <p className="text-xs text-slate-500 max-w-md mx-auto mb-4">
-                  Please paste raw quiz objects in the input box, or click{' '}
-                  <strong>Copy AI Prompt</strong> to generate them via ChatGPT or Gemini.
+                  Paste quiz objects in the input box above or load a preset paper.
                 </p>
                 <div className="flex justify-center gap-2">
                   <button
                     type="button"
                     onClick={() => handleLoadSample('ramraman100')}
-                    className="px-3.5 py-2 bg-blue-600 text-white rounded-lg text-xs font-bold hover:bg-blue-700 transition cursor-pointer shadow-2xs"
+                    className="px-3.5 py-1.5 bg-blue-600 text-white rounded-lg text-xs font-bold hover:bg-blue-700 transition cursor-pointer"
                   >
-                    Load 100 Questions Exam Paper
+                    Load 100 Qs Exam Paper
                   </button>
                   <button
                     type="button"
-                    onClick={() => handleLoadSample('math')}
-                    className="px-3.5 py-2 bg-white text-slate-700 border border-slate-300 rounded-lg text-xs font-bold hover:bg-slate-50 transition cursor-pointer shadow-2xs"
+                    onClick={() => setIsPromptModalOpen(true)}
+                    className="px-3.5 py-1.5 bg-white text-slate-700 border border-slate-300 rounded-lg text-xs font-bold hover:bg-slate-50 transition cursor-pointer"
                   >
-                    Load Math &amp; Trigonometry (LaTeX)
+                    AI Prompt
                   </button>
                 </div>
               </div>
             ) : (
               /* ====================================================
-                  PRINTABLE A4 DESK CONTAINER
+                  PRINTABLE A4 DESK CONTAINER (WIDTH = 100% OF BOX)
               ==================================================== */
               <div
-                className={`print-container space-y-8 print:space-y-0 transition-all origin-top ${
+                className={`print-container w-full space-y-6 print:space-y-0 transition-all origin-top ${
                   inkMode === 'bw' ? 'bw-ink-mode' : ''
                 }`}
-                style={{
-                  zoom: zoomLevel !== 100 ? `${zoomLevel}%` : undefined,
-                }}
               >
-                {/* ------------------------------------------------
-                    PAGE 1: OMR ANSWER SHEET
-                ------------------------------------------------ */}
+                {/* PAGE 1: OMR ANSWER SHEET */}
                 {showOmrSection && (
-                  <div className="print-page">
-                    <div className="no-print text-center mb-2 text-[11px] font-bold text-slate-500 uppercase tracking-widest">
-                      — PAGE 01 : OMR ANSWER SHEET (100 QUESTIONS) —
-                    </div>
+                  <div className="print-page w-full">
                     <OMRSheet
                       metadata={metadata}
                       questions={questions}
@@ -1200,14 +1055,9 @@ export default function App() {
                   </div>
                 )}
 
-                {/* ------------------------------------------------
-                    MIDDLE PAGES: MCQ QUESTION PAPER
-                ------------------------------------------------ */}
+                {/* MIDDLE PAGES: MCQ QUESTION PAPER */}
                 {showPaperSection && (
-                  <div className="print-page">
-                    <div className="no-print text-center mb-2 text-[11px] font-bold text-slate-500 uppercase tracking-widest">
-                      — MCQ QUESTION PAPER (HOVER ANY QUESTION TO CLICK EDIT) —
-                    </div>
+                  <div className="print-page w-full">
                     <QuestionPaper
                       metadata={metadata}
                       questions={questions}
@@ -1216,14 +1066,9 @@ export default function App() {
                   </div>
                 )}
 
-                {/* ------------------------------------------------
-                    LAST PAGE: ANSWER KEY & SOLUTION MATRIX
-                ------------------------------------------------ */}
+                {/* LAST PAGE: ANSWER KEY & SOLUTION MATRIX */}
                 {showKeySection && (
-                  <div className="print-page">
-                    <div className="no-print text-center mb-2 text-[11px] font-bold text-slate-500 uppercase tracking-widest">
-                      — LAST PAGE : OFFICIAL ANSWER KEY —
-                    </div>
+                  <div className="print-page w-full">
                     <AnswerKey metadata={metadata} questions={questions} />
                   </div>
                 )}

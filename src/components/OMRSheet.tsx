@@ -49,7 +49,7 @@ export const OMRSheet: React.FC<OMRSheetProps> = ({
   const testSeriesLetters = ['A', 'B', 'C', 'D'];
 
   return (
-    <div className="relative bg-white text-slate-950 w-full max-w-[210mm] mx-auto p-2.5 sm:p-4 border border-slate-300 screen-only-shadow print:border-none print:p-0 page-break-after box-border leading-tight">
+    <div className="relative bg-white text-slate-950 w-full mx-auto p-2.5 sm:p-4 border border-slate-300 rounded-xl print:rounded-none screen-only-shadow print:border-none print:p-0 page-break-after box-border leading-tight">
       {/* 4 Corner OMR Optical Scanner Alignment Marks (Fiducial markers) */}
       <div className="absolute top-1 left-1 w-3.5 h-3.5 bg-black" aria-hidden="true" />
       <div className="absolute top-1 right-1 w-3.5 h-3.5 bg-black" aria-hidden="true" />

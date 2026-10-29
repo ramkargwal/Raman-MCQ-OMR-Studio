@@ -49,7 +49,7 @@ export const AnswerKey: React.FC<AnswerKeyProps> = ({ metadata, questions }) => 
   };
 
   return (
-    <div className="relative bg-white text-slate-950 w-full max-w-[210mm] mx-auto p-3 sm:p-5 border border-slate-300 screen-only-shadow print:border-none print:p-0 page-break-before box-border leading-tight">
+    <div className="relative bg-white text-slate-950 w-full mx-auto p-3 sm:p-5 border border-slate-300 rounded-xl print:rounded-none screen-only-shadow print:border-none print:p-0 page-break-before box-border leading-tight">
       {/* Architectural Thick-Thin Double Outer Frame (No dark solid fills) */}
       <div className="border-2 border-indigo-950 p-0.5 rounded-xs bg-white">
         <div className="border border-indigo-900 p-3 sm:p-3.5 bg-white">
