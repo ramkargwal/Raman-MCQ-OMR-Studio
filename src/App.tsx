@@ -14,7 +14,7 @@ import {
   Check,
   ChevronDown,
   GraduationCap,
-  RefreshCw,
+  Play,
   Edit3,
   FolderOpen,
   Palette,
@@ -26,7 +26,6 @@ import { QuizMetadata, QuizQuestion, PrintTarget, SavedExam } from './types/quiz
 import {
   parseQuizInput,
   formatQuestionsToPromptText,
-  balanceQuestionOptions,
   randomizeQuestionsAndOptions,
   getAnswerDistribution,
 } from './utils/parser';
@@ -230,14 +229,29 @@ export default function App() {
     }
   };
 
-  // Purely shuffle all 4 options of every question at random (no artificial logic)
-  const handleBalanceOptions = () => {
-    if (questions.length === 0) return;
-    const shuffled = balanceQuestionOptions(questions);
-    const formatted = formatQuestionsToPromptText(shuffled);
-    setInputText(formatted);
-    setUserAnswers({});
-    showToast('Randomly shuffled all 4 options (A, B, C, D) for every question!');
+  // Copy all quiz data to clipboard and open Raman Quiz Challenge in a new tab
+  const handlePlayQuiz = () => {
+    const dataToCopy = inputText.trim();
+    if (dataToCopy) {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(inputText).catch(() => {
+          const textarea = document.getElementById('quiz-input-textarea') as HTMLTextAreaElement | null;
+          if (textarea) {
+            textarea.select();
+            document.execCommand('copy');
+          }
+        });
+      } else {
+        const textarea = document.getElementById('quiz-input-textarea') as HTMLTextAreaElement | null;
+        if (textarea) {
+          textarea.select();
+          document.execCommand('copy');
+        }
+      }
+      showToast('Quiz data copied to clipboard! Opening Raman Quiz Challenge...');
+    } else {
+      showToast('Opening Raman Quiz Challenge...');
+    }
   };
 
   // Purely shuffle question order AND purely shuffle all 4 options of every question
@@ -965,6 +979,18 @@ export default function App() {
 
                 {/* Minimal Icon Action Buttons */}
                 <div className="flex items-center gap-1">
+                  {/* Play Quiz Icon Button (Copies all data & opens Raman Quiz Challenge in new tab) */}
+                  <a
+                    href="https://ramkargwal.github.io/apps/game/raman_quiz_challenge.html"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={handlePlayQuiz}
+                    className="p-1.5 text-emerald-600 hover:bg-emerald-50 rounded-md transition cursor-pointer inline-flex items-center justify-center"
+                    title="Copy Quiz Data & Play on Raman Quiz Challenge"
+                  >
+                    <Play className="w-4 h-4 fill-current" />
+                  </a>
+
                   {/* AI Prompt Modal Icon Button */}
                   <button
                     type="button"
@@ -1005,24 +1031,13 @@ export default function App() {
                     <ClipboardPaste className="w-4 h-4" />
                   </button>
 
-                  {/* Shuffle Options (A, B, C, D) Icon Button */}
-                  <button
-                    type="button"
-                    onClick={handleBalanceOptions}
-                    disabled={questions.length === 0}
-                    className="p-1.5 text-emerald-600 hover:bg-emerald-50 rounded-md transition cursor-pointer disabled:opacity-40"
-                    title="Shuffle Options (A, B, C, D)"
-                  >
-                    <RefreshCw className="w-4 h-4" />
-                  </button>
-
-                  {/* Randomize All Questions & Options Icon Button */}
+                  {/* Single Shuffle & Randomize Icon Button */}
                   <button
                     type="button"
                     onClick={handleRandomizeAllQuestions}
                     disabled={questions.length === 0}
                     className="p-1.5 text-indigo-600 hover:bg-indigo-50 rounded-md transition cursor-pointer disabled:opacity-40"
-                    title="Randomize All Questions & Options"
+                    title="Shuffle & Randomize Questions and Options (A, B, C, D)"
                   >
                     <Shuffle className="w-4 h-4" />
                   </button>
