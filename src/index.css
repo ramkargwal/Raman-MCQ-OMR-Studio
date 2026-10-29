@@ -23,6 +23,12 @@
   }
 }
 
+/* Ensure aesthetic page boundaries stay closed on all 4 sides across page breaks */
+.page-frame-clone {
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+
 /* Monochrome Laser / B&W Printer Simulation & Print Filter */
 .bw-ink-mode {
   filter: grayscale(100%) contrast(135%);
@@ -87,7 +93,7 @@
     margin: 8mm 8mm 8mm 8mm;
   }
 
-  /* Remove shadows and borders intended for screen preview */
+  /* Remove outer card shadows intended for screen preview while preserving inner page boundary frame */
   .screen-only-shadow {
     box-shadow: none !important;
     border: none !important;
