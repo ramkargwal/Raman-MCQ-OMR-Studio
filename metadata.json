@@ -1,0 +1,6 @@
+{
+  "name": "MCQ Paper & OMR PDF Generator",
+  "description": "Generate print-ready MCQ question papers, OMR answer sheets, and answer keys with full LaTeX math formula support and AI prompt tools.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
