@@ -17,7 +17,7 @@ interface OMRSheetProps {
  * Never scales or changes size regardless of the number of questions.
  */
 const FIXED_OMR_CIRCLE =
-  'w-[18px] h-[18px] min-w-[18px] min-h-[18px] max-w-[18px] max-h-[18px] rounded-full aspect-square shrink-0 text-[9.5px] font-mono font-extrabold inline-flex items-center justify-center leading-none select-none';
+  'w-[18px] h-[18px] min-w-[18px] min-h-[18px] max-w-[18px] max-h-[18px] rounded-full aspect-square shrink-0 text-[10.5px] font-mono font-extrabold inline-flex items-center justify-center leading-none select-none';
 
 export const OMRSheet: React.FC<OMRSheetProps> = ({
   metadata,
@@ -559,7 +559,7 @@ export const OMRSheet: React.FC<OMRSheetProps> = ({
                     className="border-[1.5px] border-indigo-950 rounded-xs overflow-hidden bg-white flex flex-col"
                   >
                     {/* Column Header */}
-                    <div className="shrink-0 grid grid-cols-[30px_1fr_1fr_1fr_1fr] items-center justify-items-center text-center font-black text-[9px] py-1 border-b-2 border-indigo-950 bg-indigo-950 text-white tracking-wider">
+                    <div className="shrink-0 grid grid-cols-[30px_1fr_1fr_1fr_1fr] items-center justify-items-center text-center font-black text-[10px] py-1 border-b-2 border-indigo-950 bg-indigo-950 text-white tracking-wider">
                       <span className="w-full border-r border-indigo-700 inline-flex items-center justify-center leading-none">
                         Q.N
                       </span>
@@ -592,7 +592,7 @@ export const OMRSheet: React.FC<OMRSheetProps> = ({
                             } hover:bg-blue-50/50`}
                           >
                             {/* Question Number Cell */}
-                            <span className="w-full h-full border-r border-indigo-200 bg-slate-50/70 inline-flex items-center justify-center font-black font-mono tabular-nums text-[9.5px] text-indigo-950 leading-none">
+                            <span className="w-full h-full border-r border-indigo-200 bg-slate-50/70 inline-flex items-center justify-center font-black font-mono tabular-nums text-[10.5px] text-indigo-950 leading-none">
                               {String(slot.id).padStart(2, '0')}
                             </span>
 

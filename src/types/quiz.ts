@@ -32,6 +32,7 @@ export interface QuizMetadata {
   showWatermark: boolean;
   twoColumnLayout: boolean;
   fontSize: 'compact' | 'normal' | 'relaxed';
+  answerKeyFontSize?: 'compact' | 'normal' | 'large';
   includeOmr: boolean;
   includeQuestions: boolean;
   includeAnswerKey: boolean;

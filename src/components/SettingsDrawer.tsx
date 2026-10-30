@@ -19,6 +19,7 @@ interface SettingsDrawerProps {
   onClose: () => void;
   metadata: QuizMetadata;
   onChange: (updated: QuizMetadata) => void;
+  onResetAllSettings?: () => void;
 }
 
 type SettingsTab = 'header_logo' | 'candidate_boxes' | 'bubbles_rules' | 'footer_signs' | 'paper_print';
@@ -28,8 +29,10 @@ export const SettingsDrawer: React.FC<SettingsDrawerProps> = ({
   onClose,
   metadata,
   onChange,
+  onResetAllSettings,
 }) => {
   const [activeTab, setActiveTab] = useState<SettingsTab>('header_logo');
+  const [pendingResetType, setPendingResetType] = useState<'omr' | 'all' | null>(null);
   const logoFileInputRef = useRef<HTMLInputElement | null>(null);
   const rightLogoFileInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -166,6 +169,41 @@ export const SettingsDrawer: React.FC<SettingsDrawerProps> = ({
       omrStampSpaceLabel: '[ Stamp & Seal Space ]',
       omrOfficialSealLabel: 'Official Seal / आधिकारिक मुहर',
       omrPageFooterText: 'PAGE 01 • OMR ANSWER SHEET',
+    });
+  };
+
+  const handleResetAllWebpageSettings = () => {
+    if (onResetAllSettings) {
+      onResetAllSettings();
+      return;
+    }
+    onChange({
+      instituteName: 'राम रमन विज्ञान विश्वविद्यालय',
+      examTitle: 'वार्षिक बहुविकल्पीय परीक्षा (MCQ Assessment)',
+      subject: 'विज्ञान एवं गणित (Science & Mathematics)',
+      classGrade: 'विश्वविद्यालय स्नातक / प्रवेश परीक्षा',
+      testCode: 'RRVV/SET-A',
+      date: new Date().toLocaleDateString('hi-IN', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      }),
+      timeLimit: '120 मिनट (2 Hours)',
+      maxMarks: 100,
+      marksPerQuestion: 1,
+      negativeMarking: 0,
+      instructions: [
+        'सभी प्रश्न अनिवार्य हैं। प्रत्येक प्रश्न के 4 विकल्प (A, B, C, D) में से सही उत्तर चुनकर OMR शीट में नीले/काले बॉल पेन से गोला भरें।',
+      ],
+      watermarkText: 'राम रमन विज्ञान विश्वविद्यालय',
+      showWatermark: false,
+      twoColumnLayout: true,
+      fontSize: 'relaxed',
+      answerKeyFontSize: 'large',
+      includeOmr: true,
+      includeQuestions: true,
+      includeAnswerKey: true,
+      omrCapacity: 0,
     });
   };
 
@@ -1454,22 +1492,44 @@ export const SettingsDrawer: React.FC<SettingsDrawerProps> = ({
                   />
                 </div>
 
-                <div>
-                  <label className="block font-semibold mb-1">Question Paper Font Size</label>
-                  <select
-                    value={metadata.fontSize}
-                    onChange={(e) =>
-                      updateField(
-                        'fontSize',
-                        e.target.value as 'compact' | 'normal' | 'relaxed'
-                      )
-                    }
-                    className="w-full px-3 py-1.5 border border-slate-300 rounded bg-white"
-                  >
-                    <option value="compact">Compact (Saves pages, ideal for print)</option>
-                    <option value="normal">Normal (Standard balanced sizing)</option>
-                    <option value="relaxed">Relaxed (Large &amp; spacious text)</option>
-                  </select>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                  <div>
+                    <label className="block font-semibold mb-1">Question Paper Font Size</label>
+                    <select
+                      value={metadata.fontSize || 'relaxed'}
+                      onChange={(e) =>
+                        updateField(
+                          'fontSize',
+                          e.target.value as 'compact' | 'normal' | 'relaxed'
+                        )
+                      }
+                      className="w-full px-3 py-1.5 border border-slate-300 rounded bg-white"
+                    >
+                      <option value="relaxed">Large / Relaxed (Default - Spacious)</option>
+                      <option value="normal">Normal (Standard balanced sizing)</option>
+                      <option value="compact">Compact (Saves pages, ideal for print)</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block font-semibold mb-1">
+                      Answer Sheet / Answer Key Font Size
+                    </label>
+                    <select
+                      value={metadata.answerKeyFontSize || 'large'}
+                      onChange={(e) =>
+                        updateField(
+                          'answerKeyFontSize',
+                          e.target.value as 'compact' | 'normal' | 'large'
+                        )
+                      }
+                      className="w-full px-3 py-1.5 border border-slate-300 rounded bg-white"
+                    >
+                      <option value="large">Large (Default - Bold &amp; High Visibility)</option>
+                      <option value="normal">Normal (Standard medium sizing)</option>
+                      <option value="compact">Compact (Small compact grid)</option>
+                    </select>
+                  </div>
                 </div>
 
                 <div className="p-2.5 bg-white rounded-lg border border-slate-200 space-y-2">
@@ -1576,25 +1636,100 @@ export const SettingsDrawer: React.FC<SettingsDrawerProps> = ({
           )}
         </div>
 
-        {/* Bottom Drawer Footer with Reset & Apply */}
-        <div className="px-5 py-3 border-t border-slate-200 bg-slate-50 flex items-center justify-between gap-2">
-          <button
-            type="button"
-            onClick={handleResetOmrCustomizations}
-            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border border-slate-300 bg-white hover:bg-slate-100 text-slate-700 text-xs font-semibold transition cursor-pointer"
-            title="Reset all OMR labels, logos, and boxes back to standard defaults"
-          >
-            <RotateCcw className="w-3.5 h-3.5" />
-            <span>Reset OMR Defaults</span>
-          </button>
+        {/* Bottom Drawer Footer with Confirmation & Reset / Apply */}
+        <div className="px-5 py-3 border-t border-slate-200 bg-slate-50 flex flex-col gap-2.5">
+          {pendingResetType && (
+            <div
+              className={`p-3 rounded-xl border flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${
+                pendingResetType === 'all'
+                  ? 'bg-rose-50 border-rose-300 text-rose-950'
+                  : 'bg-amber-50 border-amber-300 text-amber-950'
+              }`}
+            >
+              <div className="space-y-0.5">
+                <p className="text-xs font-extrabold">
+                  {pendingResetType === 'all'
+                    ? 'Confirm Reset All Webpage Settings?'
+                    : 'Confirm Reset OMR Defaults?'}
+                </p>
+                <p className="text-[11px] opacity-85">
+                  {pendingResetType === 'all'
+                    ? 'Are you sure you want to reset the entire webpage, exam headers, paper layout, and OMR settings back to default?'
+                    : 'Are you sure you want to reset all OMR labels, logos, candidate boxes, and signature fields to default?'}
+                </p>
+              </div>
+              <div className="flex items-center gap-2 shrink-0">
+                <button
+                  type="button"
+                  onClick={() => setPendingResetType(null)}
+                  className="px-3 py-1.5 rounded-lg border border-slate-300 bg-white hover:bg-slate-100 text-slate-700 text-xs font-bold transition cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (pendingResetType === 'all') {
+                      handleResetAllWebpageSettings();
+                    } else {
+                      handleResetOmrCustomizations();
+                    }
+                    setPendingResetType(null);
+                  }}
+                  className={`px-3.5 py-1.5 rounded-lg text-white text-xs font-bold transition cursor-pointer ${
+                    pendingResetType === 'all'
+                      ? 'bg-rose-600 hover:bg-rose-700'
+                      : 'bg-amber-600 hover:bg-amber-700'
+                  }`}
+                >
+                  Yes, Reset Now
+                </button>
+              </div>
+            </div>
+          )}
 
-          <button
-            type="button"
-            onClick={onClose}
-            className="px-5 py-2 bg-slate-900 text-white rounded-lg text-xs font-bold hover:bg-slate-800 transition-colors cursor-pointer"
-          >
-            Apply &amp; Close
-          </button>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div className="flex flex-wrap items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setPendingResetType('omr')}
+                className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border text-xs font-semibold transition cursor-pointer ${
+                  pendingResetType === 'omr'
+                    ? 'border-amber-500 bg-amber-100 text-amber-900 ring-2 ring-amber-300'
+                    : 'border-slate-300 bg-white hover:bg-slate-100 text-slate-700'
+                }`}
+                title="Reset OMR labels, logos, and boxes back to standard defaults"
+              >
+                <RotateCcw className="w-3.5 h-3.5" />
+                <span>Reset OMR Defaults</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setPendingResetType('all')}
+                className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border text-xs font-semibold transition cursor-pointer ${
+                  pendingResetType === 'all'
+                    ? 'border-rose-500 bg-rose-100 text-rose-900 ring-2 ring-rose-300'
+                    : 'border-rose-300 bg-rose-50 hover:bg-rose-100 text-rose-700'
+                }`}
+                title="Reset all webpage settings, exam headers, paper layout, and OMR customizations to original defaults"
+              >
+                <RotateCcw className="w-3.5 h-3.5" />
+                <span>Reset All Settings</span>
+              </button>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => {
+                setPendingResetType(null);
+                onClose();
+              }}
+              className="px-5 py-2 bg-slate-900 text-white rounded-lg text-xs font-bold hover:bg-slate-800 transition-colors cursor-pointer"
+            >
+              Apply &amp; Close
+            </button>
+          </div>
         </div>
       </div>
     </div>

@@ -44,7 +44,7 @@ import { QuestionEditorModal } from './components/QuestionEditorModal';
 import { SavedExamsModal } from './components/SavedExamsModal';
 
 const STORAGE_KEYS = {
-  ACTIVE_METADATA: 'rrvv_mcq_active_metadata_v3',
+  ACTIVE_METADATA: 'rrvv_mcq_active_metadata_v4',
   SAVED_EXAMS: 'rrvv_mcq_saved_exams_v1',
 };
 
@@ -69,7 +69,8 @@ const DEFAULT_METADATA: QuizMetadata = {
   watermarkText: 'राम रमन विज्ञान विश्वविद्यालय',
   showWatermark: false,
   twoColumnLayout: true,
-  fontSize: 'normal',
+  fontSize: 'relaxed',
+  answerKeyFontSize: 'large',
   includeOmr: true,
   includeQuestions: true,
   includeAnswerKey: true,
@@ -86,6 +87,16 @@ export default function App() {
       const saved = localStorage.getItem(STORAGE_KEYS.ACTIVE_METADATA);
       if (saved) {
         return { ...DEFAULT_METADATA, ...JSON.parse(saved) };
+      }
+      const legacySaved = localStorage.getItem('rrvv_mcq_active_metadata_v3');
+      if (legacySaved) {
+        const parsedLegacy = JSON.parse(legacySaved);
+        return {
+          ...DEFAULT_METADATA,
+          ...parsedLegacy,
+          fontSize: 'relaxed',
+          answerKeyFontSize: 'large',
+        };
       }
     } catch {
       // ignore storage errors
@@ -189,6 +200,34 @@ export default function App() {
   const showToast = (msg: string) => {
     setCopiedStatus(msg);
     setTimeout(() => setCopiedStatus(null), 2600);
+  };
+
+  // Reset all webpage & exam settings back to original defaults
+  const handleResetAllSettings = () => {
+    const freshMetadata: QuizMetadata = {
+      ...DEFAULT_METADATA,
+      date: new Date().toLocaleDateString('hi-IN', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      }),
+      maxMarks:
+        questions.length > 0
+          ? questions.length * (DEFAULT_METADATA.marksPerQuestion || 1)
+          : DEFAULT_METADATA.maxMarks,
+    };
+    try {
+      localStorage.removeItem(STORAGE_KEYS.ACTIVE_METADATA);
+    } catch {
+      // ignore storage errors
+    }
+    setMetadata(freshMetadata);
+    setInkMode('color');
+    setViewMode('split');
+    setActiveTab('preview');
+    setPrintTarget('full');
+    setUserAnswers({});
+    showToast('All webpage & OMR settings reset to default!');
   };
 
   // Handle pasting directly from system clipboard into input
@@ -1170,6 +1209,7 @@ export default function App() {
         onClose={() => setIsSettingsOpen(false)}
         metadata={metadata}
         onChange={setMetadata}
+        onResetAllSettings={handleResetAllSettings}
       />
 
       {/* Visual Question Editor & Live LaTeX Fixer Modal */}

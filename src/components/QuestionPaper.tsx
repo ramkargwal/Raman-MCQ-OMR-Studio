@@ -23,7 +23,7 @@ export const QuestionPaper: React.FC<QuestionPaperProps> = ({
   pageBreakAfterLast = false,
 }) => {
   const optionLetters = ['(A)', '(B)', '(C)', '(D)'];
-  const sizeMode = metadata.fontSize || 'normal';
+  const sizeMode = metadata.fontSize || 'relaxed';
 
   // Font size classes tuned for A4 density
   const fontSizes = {
@@ -44,10 +44,16 @@ export const QuestionPaper: React.FC<QuestionPaperProps> = ({
     },
   }[sizeMode];
 
-  // Paginate questions into full A4 pages with proportional balancing so no page has empty bottom space
-  const paginationResult = useMemo(() => {
+  // Paginate questions greedily so earlier pages fill completely before spilling to the next page,
+  // and on the last page fill the first column before overflowing to the second column.
+  const paginationPages = useMemo(() => {
     if (questions.length === 0) {
-      return { pages: [] as QuizQuestion[][], isSingleUnderfilledPage: false };
+      return [] as Array<{
+        questions: QuizQuestion[];
+        weights: number[];
+        totalLoad: number;
+        pageBudget: number;
+      }>;
     }
 
     const isTwoCol = Boolean(metadata.twoColumnLayout);
@@ -57,25 +63,25 @@ export const QuestionPaper: React.FC<QuestionPaperProps> = ({
       ? sizeMode === 'compact'
         ? 124
         : sizeMode === 'normal'
-        ? 104
-        : 82
+        ? 100
+        : 68
       : sizeMode === 'compact'
       ? 58
       : sizeMode === 'normal'
       ? 48
-      : 38;
+      : 34;
 
     const nextPageBudget = isTwoCol
       ? sizeMode === 'compact'
         ? 142
         : sizeMode === 'normal'
-        ? 118
-        : 94
+        ? 116
+        : 82
       : sizeMode === 'compact'
       ? 68
       : sizeMode === 'normal'
       ? 56
-      : 44;
+      : 42;
 
     const weights = questions.map((q) => {
       const qLen = estimateVisibleLength(q.q);
@@ -96,58 +102,53 @@ export const QuestionPaper: React.FC<QuestionPaperProps> = ({
       }
     });
 
-    const totalWeight = weights.reduce((sum, w) => sum + w, 0);
-
-    // Single A4 page if all questions fit within Page 1 budget
-    if (totalWeight <= firstPageBudget) {
-      return {
-        pages: [questions],
-        isSingleUnderfilledPage: totalWeight < firstPageBudget * 0.78,
-      };
-    }
-
-    // Calculate total number of A4 pages needed and balance load proportionally across pages
-    const numPages = 1 + Math.ceil((totalWeight - firstPageBudget) / nextPageBudget);
-    const rawTotalCapacity = firstPageBudget + (numPages - 1) * nextPageBudget;
-    const scale = totalWeight / rawTotalCapacity;
-
-    const pages: QuizQuestion[][] = [];
-    let currentPage: QuizQuestion[] = [];
+    const pages: Array<{
+      questions: QuizQuestion[];
+      weights: number[];
+      totalLoad: number;
+      pageBudget: number;
+    }> = [];
+    let currentQuestions: QuizQuestion[] = [];
+    let currentWeights: number[] = [];
     let currentLoad = 0;
 
     questions.forEach((q, idx) => {
       const weight = weights[idx];
       const pageIdx = pages.length;
-      const targetBudget =
-        (pageIdx === 0 ? firstPageBudget : nextPageBudget) * scale;
+      const pageBudget = pageIdx === 0 ? firstPageBudget : nextPageBudget;
 
-      if (
-        currentPage.length > 0 &&
-        pages.length < numPages - 1 &&
-        currentLoad + weight * 0.65 > targetBudget
-      ) {
-        pages.push(currentPage);
-        currentPage = [q];
+      if (currentQuestions.length > 0 && currentLoad + weight > pageBudget) {
+        pages.push({
+          questions: currentQuestions,
+          weights: currentWeights,
+          totalLoad: currentLoad,
+          pageBudget,
+        });
+        currentQuestions = [q];
+        currentWeights = [weight];
         currentLoad = weight;
       } else {
-        currentPage.push(q);
+        currentQuestions.push(q);
+        currentWeights.push(weight);
         currentLoad += weight;
       }
     });
 
-    if (currentPage.length > 0) {
-      pages.push(currentPage);
+    if (currentQuestions.length > 0) {
+      const pageIdx = pages.length;
+      const pageBudget = pageIdx === 0 ? firstPageBudget : nextPageBudget;
+      pages.push({
+        questions: currentQuestions,
+        weights: currentWeights,
+        totalLoad: currentLoad,
+        pageBudget,
+      });
     }
 
-    return {
-      pages,
-      isSingleUnderfilledPage: false,
-    };
+    return pages;
   }, [questions, metadata.twoColumnLayout, sizeMode]);
 
-  const questionPages = paginationResult.pages;
-  const isSingleUnderfilledPage = paginationResult.isSingleUnderfilledPage;
-  const totalPages = questionPages.length;
+  const totalPages = paginationPages.length;
 
   const renderQuestionItem = (question: QuizQuestion) => {
     const visibleLengths = question.o.map(estimateVisibleLength);
@@ -217,14 +218,60 @@ export const QuestionPaper: React.FC<QuestionPaperProps> = ({
 
   return (
     <div className="w-full space-y-6 print:space-y-0">
-      {questionPages.map((pageQuestions, pageIdx) => {
+      {paginationPages.map((pageData, pageIdx) => {
+        const { questions: pageQuestions, weights: pageWeights, totalLoad, pageBudget } = pageData;
         const isFirstPage = pageIdx === 0;
+        const isLastPage = pageIdx === totalPages - 1;
         const firstQId = pageQuestions[0]?.id ?? 1;
         const lastQId = pageQuestions[pageQuestions.length - 1]?.id ?? pageQuestions.length;
 
-        const halfIdx = Math.ceil(pageQuestions.length / 2);
-        const leftColQuestions = pageQuestions.slice(0, halfIdx);
-        const rightColQuestions = pageQuestions.slice(halfIdx);
+        const isPageFull = !isLastPage || totalLoad >= pageBudget * 0.85;
+        const colBudget = pageBudget / 2;
+
+        let leftColQuestions: QuizQuestion[] = [];
+        let rightColQuestions: QuizQuestion[] = [];
+        let leftColLoad = 0;
+        let rightColLoad = 0;
+
+        if (metadata.twoColumnLayout) {
+          if (isPageFull && pageQuestions.length > 1) {
+            // Full page: balance questions across Left and Right columns by cumulative weight
+            const halfLoadTarget = totalLoad / 2;
+            let splitIndex = Math.ceil(pageQuestions.length / 2);
+            let running = 0;
+            for (let i = 0; i < pageQuestions.length; i++) {
+              running += pageWeights[i];
+              if (running >= halfLoadTarget) {
+                splitIndex = Math.max(1, Math.min(pageQuestions.length - 1, i + 1));
+                break;
+              }
+            }
+            leftColQuestions = pageQuestions.slice(0, splitIndex);
+            rightColQuestions = pageQuestions.slice(splitIndex);
+            leftColLoad = pageWeights.slice(0, splitIndex).reduce((s, w) => s + w, 0);
+            rightColLoad = pageWeights.slice(splitIndex).reduce((s, w) => s + w, 0);
+          } else {
+            // Last / underfilled page: fill Column 1 first up to single-column capacity;
+            // only remaining questions overflow into Column 2.
+            pageQuestions.forEach((q, idx) => {
+              const w = pageWeights[idx];
+              if (
+                rightColQuestions.length === 0 &&
+                (leftColQuestions.length === 0 || leftColLoad + w <= colBudget)
+              ) {
+                leftColQuestions.push(q);
+                leftColLoad += w;
+              } else {
+                rightColQuestions.push(q);
+                rightColLoad += w;
+              }
+            });
+          }
+        }
+
+        const isLeftColFull =
+          isPageFull || rightColQuestions.length > 0 || leftColLoad >= colBudget * 0.85;
+        const isRightColFull = isPageFull || rightColLoad >= colBudget * 0.85;
 
         return (
           <PageBoundaryFrame
@@ -385,12 +432,17 @@ export const QuestionPaper: React.FC<QuestionPaperProps> = ({
 
               {/* ========================================================
                   QUESTIONS & OPTIONS LIST FOR THIS PAGE
-                  Stretches vertically (flex-1 justify-between) to fill full A4 height!
+                  Full columns stretch vertically to fill the A4 height, while
+                  partially filled columns on the last page stack naturally in a single column first.
               ======================================================== */}
-              {metadata.twoColumnLayout && pageQuestions.length > 1 ? (
+              {metadata.twoColumnLayout ? (
                 <div className="flex-1 grid grid-cols-1 md:grid-cols-[1fr_1.5px_1fr] print:grid-cols-[1fr_1.5px_1fr] gap-x-3 items-stretch">
                   {/* Left Column */}
-                  <div className="flex flex-col justify-between h-full">
+                  <div
+                    className={`flex flex-col h-full ${
+                      isLeftColFull ? 'justify-between' : 'justify-start'
+                    }`}
+                  >
                     {leftColQuestions.map(renderQuestionItem)}
                   </div>
 
@@ -401,12 +453,20 @@ export const QuestionPaper: React.FC<QuestionPaperProps> = ({
                   />
 
                   {/* Right Column */}
-                  <div className="flex flex-col justify-between h-full">
+                  <div
+                    className={`flex flex-col h-full ${
+                      isRightColFull ? 'justify-between' : 'justify-start'
+                    }`}
+                  >
                     {rightColQuestions.map(renderQuestionItem)}
                   </div>
                 </div>
               ) : (
-                <div className="flex-1 flex flex-col justify-between h-full">
+                <div
+                  className={`flex-1 flex flex-col h-full ${
+                    isPageFull ? 'justify-between' : 'justify-start'
+                  }`}
+                >
                   {pageQuestions.map(renderQuestionItem)}
                 </div>
               )}
