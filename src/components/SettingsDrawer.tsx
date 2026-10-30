@@ -413,7 +413,7 @@ export const SettingsDrawer: React.FC<SettingsDrawerProps> = ({
 
     const txtContent = [
       '# ================================================================',
-      '# MCQ & OMR STUDIO - COMPLETE EXPORTED SETTINGS (.TXT)',
+      '# RAMAN MCQ & OMR STUDIO - COMPLETE EXPORTED SETTINGS (.TXT)',
       '# Contains ALL editable settings across all 5 customization tabs:',
       '# 1. Header, Logo, Slogan & 5-Cell Metadata Ribbon',
       '# 2. Candidate Boxes, Roll No, Booklet No & Series Circles',

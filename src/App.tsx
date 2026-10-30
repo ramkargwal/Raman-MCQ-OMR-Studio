@@ -708,7 +708,7 @@ export default function App() {
               <FileText className="w-4 h-4 text-white" />
             </div>
             <span className="font-extrabold tracking-tight text-slate-900 text-sm sm:text-base truncate">
-              MCQ &amp; OMR Studio
+              Raman MCQ &amp; OMR Studio
             </span>
             {parseResult.error ? (
               <span
