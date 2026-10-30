@@ -69,7 +69,12 @@ export const AnswerKey: React.FC<AnswerKeyProps> = ({ metadata, questions }) => 
           </div>
 
           <div className="flex items-center justify-center gap-2">
-            <UniversityCrest className="w-7 h-7 sm:w-8 sm:h-8 shrink-0" />
+            <UniversityCrest
+              className="w-7 h-7 sm:w-8 sm:h-8 shrink-0"
+              logoStyle={metadata.logoStyle || 'science'}
+              customLogoUrl={metadata.customLogoUrl}
+              monogramText={metadata.logoMonogramText}
+            />
             <div className="flex flex-col items-center justify-center text-center">
               <h1 className="text-sm sm:text-base font-black uppercase tracking-tight text-indigo-950 font-serif text-center leading-tight">
                 {metadata.instituteName || 'राम रमन विज्ञान विश्वविद्यालय'}

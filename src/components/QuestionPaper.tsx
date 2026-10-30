@@ -45,8 +45,10 @@ export const QuestionPaper: React.FC<QuestionPaperProps> = ({
   }[sizeMode];
 
   // Paginate questions into full A4 pages with proportional balancing so no page has empty bottom space
-  const questionPages = useMemo(() => {
-    if (questions.length === 0) return [];
+  const paginationResult = useMemo(() => {
+    if (questions.length === 0) {
+      return { pages: [] as QuizQuestion[][], isSingleUnderfilledPage: false };
+    }
 
     const isTwoCol = Boolean(metadata.twoColumnLayout);
 
@@ -98,7 +100,10 @@ export const QuestionPaper: React.FC<QuestionPaperProps> = ({
 
     // Single A4 page if all questions fit within Page 1 budget
     if (totalWeight <= firstPageBudget) {
-      return [questions];
+      return {
+        pages: [questions],
+        isSingleUnderfilledPage: totalWeight < firstPageBudget * 0.78,
+      };
     }
 
     // Calculate total number of A4 pages needed and balance load proportionally across pages
@@ -134,9 +139,14 @@ export const QuestionPaper: React.FC<QuestionPaperProps> = ({
       pages.push(currentPage);
     }
 
-    return pages;
+    return {
+      pages,
+      isSingleUnderfilledPage: false,
+    };
   }, [questions, metadata.twoColumnLayout, sizeMode]);
 
+  const questionPages = paginationResult.pages;
+  const isSingleUnderfilledPage = paginationResult.isSingleUnderfilledPage;
   const totalPages = questionPages.length;
 
   const renderQuestionItem = (question: QuizQuestion) => {
@@ -260,11 +270,18 @@ export const QuestionPaper: React.FC<QuestionPaperProps> = ({
                     {/* University Crest + Name + Title */}
                     <div className="flex flex-col items-center justify-center text-center">
                       <div className="flex items-center justify-center gap-2.5 my-0.5">
-                        <UniversityCrest className="w-8 h-8 sm:w-9 sm:h-9" />
+                        <UniversityCrest
+                          className="w-8 h-8 sm:w-9 sm:h-9"
+                          logoStyle={metadata.logoStyle || 'science'}
+                          customLogoUrl={metadata.customLogoUrl}
+                          monogramText={metadata.logoMonogramText}
+                        />
                         <div className="flex flex-col items-center justify-center text-center">
-                          <span className="text-[8.5px] font-bold text-rose-950 tracking-widest leading-none mb-0.5">
-                            ॥ विद्या ददाति विनयम् ॥
-                          </span>
+                          {(metadata.omrSlogan ?? '॥ विद्या ददाति विनयम् ॥') && (
+                            <span className="text-[8.5px] font-bold text-rose-950 tracking-widest leading-none mb-0.5">
+                              {metadata.omrSlogan ?? '॥ विद्या ददाति विनयम् ॥'}
+                            </span>
+                          )}
                           <h1 className="text-lg sm:text-xl font-black uppercase tracking-tight text-indigo-950 font-serif text-center leading-tight">
                             {metadata.instituteName || 'राम रमन विज्ञान विश्वविद्यालय'}
                           </h1>
