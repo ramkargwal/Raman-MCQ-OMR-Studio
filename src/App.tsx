@@ -75,6 +75,82 @@ const DEFAULT_METADATA: QuizMetadata = {
   includeQuestions: true,
   includeAnswerKey: true,
   omrCapacity: 0,
+
+  // --- OMR Sheet & Branding Full Customization Defaults ---
+  logoStyle: 'science',
+  customLogoUrl: '',
+  logoMonogramText: 'RRVV',
+  omrShowLeftLogo: true,
+  omrShowRightLogo: true,
+  omrRightLogoSameAsLeft: true,
+  omrRightCustomLogoUrl: '',
+  omrBadgePrefix: 'OMR',
+  omrTopBarTitle: 'OPTICAL MARK RECOGNITION ANSWER SHEET • ओएमआर उत्तर पत्रक',
+  omrSlogan: '॥ विद्या ददाति विनयम् ॥',
+  omrShowBarcode: true,
+  omrFormCode: 'FORM: A4-STD',
+  omrTimeLabel: 'TIME / समय',
+  omrDateLabel: 'DATE / तारीख',
+  omrQuestionsLabel: 'QUESTIONS / कुल प्रश्न',
+  omrMaxMarksLabel: 'MAX MARKS / पूर्णांक',
+  omrNegativeLabel: 'NEGATIVE / ऋणात्मक',
+  omrNegativeCustomText: '',
+  omrCandidateNameLabel: '1. Candidate Name / अभ्यर्थी का नाम (In Block Letters)',
+  omrCandidateNameBoxes: 16,
+  omrShowFatherName: true,
+  omrFatherNameLabel: "2. Father's / Guardian's Name / पिता या अभिभावक का नाम",
+  omrFatherNameBoxes: 16,
+  omrSubjectClassLabel: 'Subject & Class / विषय एवं कक्षा:',
+  omrExamCenterLabel: 'Exam Center / परीक्षा केंद्र:',
+  omrExamCenterDefaultValue: '',
+  omrRollNoLabel: '3. Roll Number / अनुक्रमांक (8 Digits)',
+  omrRollNoDigits: 8,
+  omrBookletNoLabel: '4. Question Booklet No. / प्रश्न पुस्तिका संख्या',
+  omrBookletNoDigits: 6,
+  omrCenterCodeLabel: 'Center Code / केंद्र कोड:',
+  omrCenterCodeDigits: 4,
+  omrRoomNoLabel: 'Room No. / कक्ष सं.:',
+  omrRoomNoDigits: 3,
+  omrBookletSeriesLabel: '5. Booklet Series / श्रृंखला',
+  omrBookletSeriesOptions: 'A, B, C, D',
+  omrShiftLabel: '6. Shift / पाली',
+  omrShiftOptions: 'I, II',
+  omrSeriesFooterNote: 'Darken Correct Set & Shift Circle',
+  omrShowInstructionsBar: true,
+  omrInstructionBadge: 'महत्वपूर्ण निर्देश / MARKING INSTRUCTIONS',
+  omrInstructionHeadline:
+    'केवल काले या नीले बॉल पेन (Black/Blue Ball Point Pen) से गोले को पूर्णतः गहरा भरें।',
+  omrInstructionSubtext:
+    '• पहले स्तंभ (Column 1: Q.01–20) को पूरा भरने के बाद ही अगले स्तंभ पर जाएं। • एक से अधिक गोले भरने या काट-छांट करने पर उत्तर अमान्य होगा।',
+  omrWrongLabel: 'गलत / Wrong:',
+  omrCorrectLabel: 'सही / Correct:',
+  omrResponseHeaderTitle: '▼ RESPONSE SHEET / उत्तर प्रभाग',
+  omrOptionStyle: 'ABCD',
+  omrRoughWorkTitle: '✎ SPACE FOR ROUGH WORK / रफ कार्य हेतु स्थान',
+  omrRoughWorkSubtitle:
+    'Candidate Calculation & Scratchpad Area • अभ्यर्थी गणना एवं रफ कार्य क्षेत्र',
+  omrRoughWorkFooterNote: 'Do not make any stray marks on the OMR response circles.',
+  omrShowEvaluationTable: true,
+  omrEvalTotalLabel: 'Total Questions',
+  omrEvalAttemptedLabel: 'Attempted / हल किए',
+  omrEvalBlankLabel: 'Left Blank / छोड़े गए',
+  omrEvalCorrectLabel: 'Correct (+)',
+  omrEvalWrongLabel: 'Wrong (-)',
+  omrEvalNetScoreLabel: 'Net Score / प्राप्तांक',
+  omrDeclarationTitle: 'घोषणा / Declaration:',
+  omrDeclarationText:
+    'मैं प्रमाणित करता/करती हूँ कि मैंने ऊपर अपना अनुक्रमांक एवं प्रश्न पुस्तिका श्रृंखला सही-सही अंकित की है।',
+  omrCandidateSignLabel: "Candidate's Signature / अभ्यर्थी के हस्ताक्षर",
+  omrCandidateSignSubtext: '(In Running Hand)',
+  omrVerificationTitle: 'सत्यापन / Verification:',
+  omrVerificationText:
+    'अभ्यर्थी के अनुक्रमांक, नाम एवं पुस्तिका कोड का मिलान कर सत्यापित किया गया।',
+  omrInvigilatorSignLabel: "Invigilator's Signature / कक्ष निरीक्षक",
+  omrInvigilatorSignSubtext: '(With Date)',
+  omrSuperintendentLabel: 'Center Superintendent / केंद्राधीक्षक',
+  omrStampSpaceLabel: '[ Stamp & Seal Space ]',
+  omrOfficialSealLabel: 'Official Seal / आधिकारिक मुहर',
+  omrPageFooterText: 'PAGE 01 • OMR ANSWER SHEET',
 };
 
 export default function App() {
@@ -369,19 +445,54 @@ export default function App() {
         return;
       }
 
-      // Check if it is a JSON pack containing { inputText, metadata }
+      // Check if it is an exported OMR Settings .txt file or JSON pack
       try {
-        const parsedJson = JSON.parse(content);
-        if (parsedJson && typeof parsedJson.inputText === 'string') {
-          setInputText(parsedJson.inputText);
-          if (parsedJson.metadata) {
-            setMetadata((prev) => ({ ...prev, ...parsedJson.metadata }));
+        const withoutComments = content
+          .split(/\r?\n/)
+          .filter((line) => !line.trim().startsWith('#'))
+          .join('\n')
+          .trim();
+
+        const firstBrace = withoutComments.indexOf('{');
+        const lastBrace = withoutComments.lastIndexOf('}');
+        if (firstBrace !== -1 && lastBrace > firstBrace) {
+          const parsedJson = JSON.parse(withoutComments.slice(firstBrace, lastBrace + 1));
+
+          if (parsedJson && parsedJson.__type === 'OMR_EXAM_SETTINGS_V1' && parsedJson.metadata) {
+            if (parsedJson.inkMode === 'color' || parsedJson.inkMode === 'bw') {
+              setInkMode(parsedJson.inkMode);
+            }
+            if (
+              parsedJson.printTarget &&
+              ['full', 'student_pack', 'omr_only', 'paper_only', 'key_only'].includes(
+                parsedJson.printTarget
+              )
+            ) {
+              setPrintTarget(parsedJson.printTarget as PrintTarget);
+            }
+            if (parsedJson.viewMode === 'split' || parsedJson.viewMode === 'document') {
+              setViewMode(parsedJson.viewMode);
+            }
+            setMetadata((prev) => ({
+              ...DEFAULT_METADATA,
+              ...prev,
+              ...parsedJson.metadata,
+            }));
+            showToast(`Applied all settings from "${file.name}"!`);
+            return;
           }
-          showToast(`Loaded exam pack from "${file.name}"!`);
-          return;
+
+          if (parsedJson && typeof parsedJson.inputText === 'string') {
+            setInputText(parsedJson.inputText);
+            if (parsedJson.metadata) {
+              setMetadata((prev) => ({ ...prev, ...parsedJson.metadata }));
+            }
+            showToast(`Loaded exam pack from "${file.name}"!`);
+            return;
+          }
         }
       } catch {
-        // Regular .txt file
+        // Regular .txt file containing questions
       }
 
       setInputText(content);
@@ -1210,6 +1321,13 @@ export default function App() {
         metadata={metadata}
         onChange={setMetadata}
         onResetAllSettings={handleResetAllSettings}
+        inkMode={inkMode}
+        onInkModeChange={setInkMode}
+        printTarget={printTarget}
+        onPrintTargetChange={setPrintTarget}
+        viewMode={viewMode}
+        onViewModeChange={setViewMode}
+        onNotify={showToast}
       />
 
       {/* Visual Question Editor & Live LaTeX Fixer Modal */}

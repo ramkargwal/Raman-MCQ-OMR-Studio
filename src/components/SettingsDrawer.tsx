@@ -1,10 +1,13 @@
 import React, { useState, useRef } from 'react';
-import { QuizMetadata, LogoPresetStyle, OmrOptionStyle } from '../types/quiz';
+import { QuizMetadata, LogoPresetStyle, OmrOptionStyle, PrintTarget } from '../types/quiz';
 import { UniversityCrest } from './UniversityCrest';
 import {
   X,
   Sliders,
   Upload,
+  ArrowUp,
+  ArrowDown,
+  Check,
   Trash2,
   RotateCcw,
   Building2,
@@ -20,6 +23,13 @@ interface SettingsDrawerProps {
   metadata: QuizMetadata;
   onChange: (updated: QuizMetadata) => void;
   onResetAllSettings?: () => void;
+  inkMode?: 'color' | 'bw';
+  onInkModeChange?: (mode: 'color' | 'bw') => void;
+  printTarget?: PrintTarget;
+  onPrintTargetChange?: (target: PrintTarget) => void;
+  viewMode?: 'split' | 'document';
+  onViewModeChange?: (mode: 'split' | 'document') => void;
+  onNotify?: (message: string) => void;
 }
 
 type SettingsTab = 'header_logo' | 'candidate_boxes' | 'bubbles_rules' | 'footer_signs' | 'paper_print';
@@ -30,11 +40,23 @@ export const SettingsDrawer: React.FC<SettingsDrawerProps> = ({
   metadata,
   onChange,
   onResetAllSettings,
+  inkMode = 'color',
+  onInkModeChange,
+  printTarget = 'full',
+  onPrintTargetChange,
+  viewMode = 'split',
+  onViewModeChange,
+  onNotify,
 }) => {
   const [activeTab, setActiveTab] = useState<SettingsTab>('header_logo');
   const [pendingResetType, setPendingResetType] = useState<'omr' | 'all' | null>(null);
+  const [settingsStatusMsg, setSettingsStatusMsg] = useState<{
+    type: 'success' | 'error';
+    text: string;
+  } | null>(null);
   const logoFileInputRef = useRef<HTMLInputElement | null>(null);
   const rightLogoFileInputRef = useRef<HTMLInputElement | null>(null);
+  const settingsTxtInputRef = useRef<HTMLInputElement | null>(null);
 
   if (!isOpen) return null;
 
@@ -207,6 +229,330 @@ export const SettingsDrawer: React.FC<SettingsDrawerProps> = ({
     });
   };
 
+  const showStatusFeedback = (type: 'success' | 'error', text: string) => {
+    setSettingsStatusMsg({ type, text });
+    if (onNotify) {
+      onNotify(text);
+    }
+    window.setTimeout(() => {
+      setSettingsStatusMsg((prev) => (prev?.text === text ? null : prev));
+    }, 4000);
+  };
+
+  const buildCompleteMetadata = (current: QuizMetadata): QuizMetadata => ({
+    // 1. Header, School Info & Exam Metadata
+    instituteName: current.instituteName ?? 'राम रमन विज्ञान विश्वविद्यालय',
+    examTitle: current.examTitle ?? 'वार्षिक बहुविकल्पीय परीक्षा (MCQ Assessment)',
+    subject: current.subject ?? 'विज्ञान एवं गणित (Science & Mathematics)',
+    classGrade: current.classGrade ?? 'विश्वविद्यालय स्नातक / प्रवेश परीक्षा',
+    testCode: current.testCode ?? 'RRVV/SET-A',
+    date:
+      current.date ??
+      new Date().toLocaleDateString('hi-IN', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      }),
+    timeLimit: current.timeLimit ?? '120 मिनट (2 Hours)',
+    maxMarks: current.maxMarks ?? 100,
+    marksPerQuestion: current.marksPerQuestion ?? 1,
+    negativeMarking: current.negativeMarking ?? 0,
+    omrNegativeCustomText: current.omrNegativeCustomText ?? '',
+
+    // 2. Logo & Emblem Settings
+    logoStyle: current.logoStyle ?? 'science',
+    customLogoUrl: current.customLogoUrl ?? '',
+    logoMonogramText: current.logoMonogramText ?? 'RRVV',
+    omrShowLeftLogo: current.omrShowLeftLogo !== false,
+    omrShowRightLogo: current.omrShowRightLogo !== false,
+    omrRightLogoSameAsLeft: current.omrRightLogoSameAsLeft !== false,
+    omrRightCustomLogoUrl: current.omrRightCustomLogoUrl ?? '',
+
+    // 3. Top Crown Bar & Slogan
+    omrSlogan: current.omrSlogan ?? '॥ विद्या ददाति विनयम् ॥',
+    omrBadgePrefix: current.omrBadgePrefix ?? 'OMR',
+    omrFormCode: current.omrFormCode ?? 'FORM: A4-STD',
+    omrTopBarTitle:
+      current.omrTopBarTitle ??
+      'OPTICAL MARK RECOGNITION ANSWER SHEET • ओएमआर उत्तर पत्रक',
+    omrShowBarcode: current.omrShowBarcode !== false,
+
+    // 4. 5-Cell Metadata Ribbon Headings
+    omrTimeLabel: current.omrTimeLabel ?? 'TIME / समय',
+    omrDateLabel: current.omrDateLabel ?? 'DATE / तारीख',
+    omrQuestionsLabel: current.omrQuestionsLabel ?? 'QUESTIONS / कुल प्रश्न',
+    omrMaxMarksLabel: current.omrMaxMarksLabel ?? 'MAX MARKS / पूर्णांक',
+    omrNegativeLabel: current.omrNegativeLabel ?? 'NEGATIVE / ऋणात्मक',
+
+    // 5. Candidate Boxes, Roll No, Booklet & Series
+    omrCandidateNameLabel:
+      current.omrCandidateNameLabel ??
+      '1. Candidate Name / अभ्यर्थी का नाम (In Block Letters)',
+    omrCandidateNameBoxes: current.omrCandidateNameBoxes ?? 16,
+    omrShowFatherName: current.omrShowFatherName !== false,
+    omrFatherNameLabel:
+      current.omrFatherNameLabel ??
+      "2. Father's / Guardian's Name / पिता या अभिभावक का नाम",
+    omrFatherNameBoxes: current.omrFatherNameBoxes ?? 16,
+    omrSubjectClassLabel:
+      current.omrSubjectClassLabel ?? 'Subject & Class / विषय एवं कक्षा:',
+    omrExamCenterLabel:
+      current.omrExamCenterLabel ?? 'Exam Center / परीक्षा केंद्र:',
+    omrExamCenterDefaultValue: current.omrExamCenterDefaultValue ?? '',
+    omrRollNoLabel:
+      current.omrRollNoLabel ??
+      `3. Roll Number / अनुक्रमांक (${current.omrRollNoDigits || 8} Digits)`,
+    omrRollNoDigits: current.omrRollNoDigits ?? 8,
+    omrBookletNoLabel:
+      current.omrBookletNoLabel ??
+      '4. Question Booklet No. / प्रश्न पुस्तिका संख्या',
+    omrBookletNoDigits: current.omrBookletNoDigits ?? 6,
+    omrCenterCodeLabel:
+      current.omrCenterCodeLabel ?? 'Center Code / केंद्र कोड:',
+    omrCenterCodeDigits: current.omrCenterCodeDigits ?? 4,
+    omrRoomNoLabel: current.omrRoomNoLabel ?? 'Room No. / कक्ष सं.:',
+    omrRoomNoDigits: current.omrRoomNoDigits ?? 3,
+    omrBookletSeriesLabel:
+      current.omrBookletSeriesLabel ?? '5. Booklet Series / श्रृंखला',
+    omrBookletSeriesOptions: current.omrBookletSeriesOptions ?? 'A, B, C, D',
+    omrShiftLabel: current.omrShiftLabel ?? '6. Shift / पाली',
+    omrShiftOptions: current.omrShiftOptions ?? 'I, II',
+    omrSeriesFooterNote:
+      current.omrSeriesFooterNote ?? 'Darken Correct Set & Shift Circle',
+
+    // 6. OMR Bubbles, Capacity, Instructions Bar & Rough Work
+    omrCapacity: current.omrCapacity ?? 0,
+    omrOptionStyle: current.omrOptionStyle ?? 'ABCD',
+    omrResponseHeaderTitle:
+      current.omrResponseHeaderTitle ?? '▼ RESPONSE SHEET / उत्तर प्रभाग',
+    omrShowInstructionsBar: current.omrShowInstructionsBar !== false,
+    omrInstructionBadge:
+      current.omrInstructionBadge ??
+      'महत्वपूर्ण निर्देश / MARKING INSTRUCTIONS',
+    omrInstructionHeadline:
+      current.omrInstructionHeadline ??
+      'केवल काले या नीले बॉल पेन (Black/Blue Ball Point Pen) से गोले को पूर्णतः गहरा भरें।',
+    omrInstructionSubtext:
+      current.omrInstructionSubtext ??
+      '• पहले स्तंभ (Column 1: Q.01–20) को पूरा भरने के बाद ही अगले स्तंभ पर जाएं। • एक से अधिक गोले भरने या काट-छांट करने पर उत्तर अमान्य होगा।',
+    omrWrongLabel: current.omrWrongLabel ?? 'गलत / Wrong:',
+    omrCorrectLabel: current.omrCorrectLabel ?? 'सही / Correct:',
+    omrRoughWorkTitle:
+      current.omrRoughWorkTitle ??
+      '✎ SPACE FOR ROUGH WORK / रफ कार्य हेतु स्थान',
+    omrRoughWorkSubtitle:
+      current.omrRoughWorkSubtitle ??
+      'Candidate Calculation & Scratchpad Area • अभ्यर्थी गणना एवं रफ कार्य क्षेत्र',
+    omrRoughWorkFooterNote:
+      current.omrRoughWorkFooterNote ??
+      'Do not make any stray marks on the OMR response circles.',
+
+    // 7. Evaluation Table, Declarations, Signatures & Footer
+    omrShowEvaluationTable: current.omrShowEvaluationTable !== false,
+    omrEvalTotalLabel: current.omrEvalTotalLabel ?? 'Total Questions',
+    omrEvalAttemptedLabel: current.omrEvalAttemptedLabel ?? 'Attempted / हल किए',
+    omrEvalBlankLabel: current.omrEvalBlankLabel ?? 'Left Blank / छोड़े गए',
+    omrEvalCorrectLabel: current.omrEvalCorrectLabel ?? 'Correct (+)',
+    omrEvalWrongLabel: current.omrEvalWrongLabel ?? 'Wrong (-)',
+    omrEvalNetScoreLabel: current.omrEvalNetScoreLabel ?? 'Net Score / प्राप्तांक',
+    omrDeclarationTitle: current.omrDeclarationTitle ?? 'घोषणा / Declaration:',
+    omrDeclarationText:
+      current.omrDeclarationText ??
+      'मैं प्रमाणित करता/करती हूँ कि मैंने ऊपर अपना अनुक्रमांक एवं प्रश्न पुस्तिका श्रृंखला सही-सही अंकित की है।',
+    omrCandidateSignLabel:
+      current.omrCandidateSignLabel ??
+      "Candidate's Signature / अभ्यर्थी के हस्ताक्षर",
+    omrCandidateSignSubtext:
+      current.omrCandidateSignSubtext ?? '(In Running Hand)',
+    omrVerificationTitle:
+      current.omrVerificationTitle ?? 'सत्यापन / Verification:',
+    omrVerificationText:
+      current.omrVerificationText ??
+      'अभ्यर्थी के अनुक्रमांक, नाम एवं पुस्तिका कोड का मिलान कर सत्यापित किया गया।',
+    omrInvigilatorSignLabel:
+      current.omrInvigilatorSignLabel ??
+      "Invigilator's Signature / कक्ष निरीक्षक",
+    omrInvigilatorSignSubtext:
+      current.omrInvigilatorSignSubtext ?? '(With Date)',
+    omrSuperintendentLabel:
+      current.omrSuperintendentLabel ?? 'Center Superintendent / केंद्राधीक्षक',
+    omrStampSpaceLabel:
+      current.omrStampSpaceLabel ?? '[ Stamp & Seal Space ]',
+    omrOfficialSealLabel:
+      current.omrOfficialSealLabel ?? 'Official Seal / आधिकारिक मुहर',
+    omrPageFooterText:
+      current.omrPageFooterText ?? 'PAGE 01 • OMR ANSWER SHEET',
+
+    // 8. Question Paper Layout, Watermark, Included Pages & Instructions
+    twoColumnLayout: current.twoColumnLayout !== false,
+    fontSize: current.fontSize ?? 'relaxed',
+    answerKeyFontSize: current.answerKeyFontSize ?? 'large',
+    showWatermark: Boolean(current.showWatermark),
+    watermarkText: current.watermarkText ?? 'राम रमन विज्ञान विश्वविद्यालय',
+    includeOmr: current.includeOmr !== false,
+    includeQuestions: current.includeQuestions !== false,
+    includeAnswerKey: current.includeAnswerKey !== false,
+    instructions:
+      Array.isArray(current.instructions) && current.instructions.length > 0
+        ? current.instructions
+        : [
+            'सभी प्रश्न अनिवार्य हैं। प्रत्येक प्रश्न के 4 विकल्प (A, B, C, D) में से सही उत्तर चुनकर OMR शीट में नीले/काले बॉल पेन से गोला भरें।',
+          ],
+  });
+
+  const handleExportSettingsTxt = () => {
+    const completeMetadata = buildCompleteMetadata(metadata);
+    const payload = {
+      __type: 'OMR_EXAM_SETTINGS_V1',
+      exportedAt: new Date().toISOString(),
+      inkMode,
+      printTarget,
+      viewMode,
+      metadata: completeMetadata,
+    };
+
+    const txtContent = [
+      '# ================================================================',
+      '# MCQ & OMR STUDIO - COMPLETE EXPORTED SETTINGS (.TXT)',
+      '# Contains ALL editable settings across all 5 customization tabs:',
+      '# 1. Header, Logo, Slogan & 5-Cell Metadata Ribbon',
+      '# 2. Candidate Boxes, Roll No, Booklet No & Series Circles',
+      '# 3. OMR Bubbles, Capacity, Marking Instructions & Rough Work',
+      '# 4. Evaluation Summary Table, Declarations, Signatures & Seal',
+      '# 5. Question Paper Layout, Font Sizes, Watermark & Ink Mode',
+      '#',
+      '# Use the "Import Setting" button in Settings to restore and',
+      '# apply all settings in one step.',
+      '# ================================================================',
+      JSON.stringify(payload, null, 2),
+      '',
+    ].join('\n');
+
+    const blob = new Blob([txtContent], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    const safeCode = (completeMetadata.testCode || 'exam')
+      .replace(/[^a-zA-Z0-9_-]/g, '_')
+      .toLowerCase();
+    const filename = `omr_settings_${safeCode}.txt`;
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+
+    showStatusFeedback('success', `Exported all editable settings to "${filename}"!`);
+  };
+
+  const handleImportSettingsTxt = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const raw = String(ev.target?.result || '').trim();
+      if (!raw) {
+        showStatusFeedback('error', 'Selected settings file is empty.');
+        return;
+      }
+
+      try {
+        // Strip comment lines starting with # or extract JSON block between first { and last }
+        const withoutComments = raw
+          .split(/\r?\n/)
+          .filter((line) => !line.trim().startsWith('#'))
+          .join('\n')
+          .trim();
+
+        const firstBrace = withoutComments.indexOf('{');
+        const lastBrace = withoutComments.lastIndexOf('}');
+        if (firstBrace !== -1 && lastBrace > firstBrace) {
+          const jsonCandidate = withoutComments.slice(firstBrace, lastBrace + 1);
+          const parsed = JSON.parse(jsonCandidate);
+
+          if (parsed && typeof parsed === 'object') {
+            if (parsed.inkMode === 'color' || parsed.inkMode === 'bw') {
+              onInkModeChange?.(parsed.inkMode);
+            }
+            if (
+              parsed.printTarget &&
+              ['full', 'student_pack', 'omr_only', 'paper_only', 'key_only'].includes(
+                parsed.printTarget
+              )
+            ) {
+              onPrintTargetChange?.(parsed.printTarget as PrintTarget);
+            }
+            if (parsed.viewMode === 'split' || parsed.viewMode === 'document') {
+              onViewModeChange?.(parsed.viewMode);
+            }
+            const importedMeta =
+              parsed.metadata && typeof parsed.metadata === 'object'
+                ? parsed.metadata
+                : parsed;
+
+            const completeBase = buildCompleteMetadata(metadata);
+            onChange({
+              ...completeBase,
+              ...importedMeta,
+            });
+            showStatusFeedback(
+              'success',
+              `All settings imported & applied from "${file.name}"!`
+            );
+            return;
+          }
+        }
+
+        // Fallback: parse simple KEY=VALUE lines if user wrote a manual .txt config
+        const kvUpdates: Record<string, unknown> = {};
+        for (const line of withoutComments.split(/\r?\n/)) {
+          const trimmed = line.trim();
+          if (!trimmed || !trimmed.includes('=')) continue;
+          const eqIdx = trimmed.indexOf('=');
+          const key = trimmed.slice(0, eqIdx).trim();
+          const valStr = trimmed.slice(eqIdx + 1).trim();
+          if (!key) continue;
+          if (valStr === 'true') kvUpdates[key] = true;
+          else if (valStr === 'false') kvUpdates[key] = false;
+          else if (!Number.isNaN(Number(valStr)) && valStr !== '') {
+            kvUpdates[key] = Number(valStr);
+          } else {
+            kvUpdates[key] = valStr;
+          }
+        }
+
+        if (Object.keys(kvUpdates).length > 0) {
+          if (kvUpdates.inkMode === 'color' || kvUpdates.inkMode === 'bw') {
+            onInkModeChange?.(kvUpdates.inkMode);
+          }
+          const completeBase = buildCompleteMetadata(metadata);
+          onChange({
+            ...completeBase,
+            ...(kvUpdates as Partial<QuizMetadata>),
+          });
+          showStatusFeedback(
+            'success',
+            `Applied ${Object.keys(kvUpdates).length} settings from "${file.name}"!`
+          );
+          return;
+        }
+
+        showStatusFeedback(
+          'error',
+          'Could not find valid settings in this .txt file.'
+        );
+      } catch {
+        showStatusFeedback(
+          'error',
+          'Invalid settings file format. Please upload an exported settings .txt file.'
+        );
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = '';
+  };
+
   const tabs: Array<{ id: SettingsTab; label: string; icon: React.ReactNode }> = [
     { id: 'header_logo', label: 'Header & Logo', icon: <Building2 className="w-3.5 h-3.5" /> },
     { id: 'candidate_boxes', label: 'Boxes & Roll No', icon: <UserCheck className="w-3.5 h-3.5" /> },
@@ -226,7 +572,7 @@ export const SettingsDrawer: React.FC<SettingsDrawerProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex justify-end bg-black/50 backdrop-blur-xs no-print">
-      <div className="bg-white w-full max-w-xl h-full shadow-2xl flex flex-col overflow-hidden animate-in slide-in-from-right duration-200">
+      <div className="bg-white w-full max-w-3xl h-full shadow-2xl flex flex-col overflow-hidden animate-in slide-in-from-right duration-200">
         {/* Top Drawer Header */}
         <div className="px-5 py-3.5 border-b border-slate-200 flex items-center justify-between bg-slate-900 text-white">
           <div className="flex items-center gap-2.5">
@@ -620,7 +966,18 @@ export const SettingsDrawer: React.FC<SettingsDrawerProps> = ({
                   </div>
                 </div>
 
-                <div className="grid grid-cols-3 gap-2">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                  <div>
+                    <label className="block font-semibold mb-1">Max Marks (पूर्णांक)</label>
+                    <input
+                      type="number"
+                      min={1}
+                      step={1}
+                      value={metadata.maxMarks}
+                      onChange={(e) => updateField('maxMarks', Number(e.target.value))}
+                      className="w-full px-2.5 py-1.5 border border-slate-300 rounded bg-white"
+                    />
+                  </div>
                   <div>
                     <label className="block font-semibold mb-1">Marks / Question</label>
                     <input
@@ -1557,6 +1914,24 @@ export const SettingsDrawer: React.FC<SettingsDrawerProps> = ({
                     />
                   )}
                 </div>
+
+                {/* Printer Ink Mode Selection */}
+                <div className="p-2.5 bg-white rounded-lg border border-slate-200 flex items-center justify-between gap-3">
+                  <div>
+                    <div className="font-bold text-slate-800">Printer Ink Mode (प्रिंट रंग मोड)</div>
+                    <div className="text-[10px] text-slate-500">
+                      Choose Deep Ink Color or Pure B&amp;W Laser Monochrome
+                    </div>
+                  </div>
+                  <select
+                    value={inkMode}
+                    onChange={(e) => onInkModeChange?.(e.target.value as 'color' | 'bw')}
+                    className="px-3 py-1.5 border border-slate-300 rounded bg-white font-semibold"
+                  >
+                    <option value="color">Color Ink Mode</option>
+                    <option value="bw">Pure B&amp;W Mode</option>
+                  </select>
+                </div>
               </div>
 
               {/* Included PDF Pages */}
@@ -1688,6 +2063,30 @@ export const SettingsDrawer: React.FC<SettingsDrawerProps> = ({
             </div>
           )}
 
+          {settingsStatusMsg && (
+            <div
+              className={`px-3 py-2 rounded-lg border text-xs font-semibold flex items-center justify-between gap-2 ${
+                settingsStatusMsg.type === 'success'
+                  ? 'bg-emerald-50 border-emerald-300 text-emerald-900'
+                  : 'bg-rose-50 border-rose-300 text-rose-900'
+              }`}
+            >
+              <div className="flex items-center gap-1.5">
+                {settingsStatusMsg.type === 'success' && (
+                  <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                )}
+                <span>{settingsStatusMsg.text}</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setSettingsStatusMsg(null)}
+                className="text-[11px] underline opacity-75 hover:opacity-100 cursor-pointer"
+              >
+                Dismiss
+              </button>
+            </div>
+          )}
+
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div className="flex flex-wrap items-center gap-2">
               <button
@@ -1700,7 +2099,7 @@ export const SettingsDrawer: React.FC<SettingsDrawerProps> = ({
                 }`}
                 title="Reset OMR labels, logos, and boxes back to standard defaults"
               >
-                <RotateCcw className="w-3.5 h-3.5" />
+                <RotateCcw className="w-3.5 h-3.5 shrink-0" />
                 <span>Reset OMR Defaults</span>
               </button>
 
@@ -1714,9 +2113,42 @@ export const SettingsDrawer: React.FC<SettingsDrawerProps> = ({
                 }`}
                 title="Reset all webpage settings, exam headers, paper layout, and OMR customizations to original defaults"
               >
-                <RotateCcw className="w-3.5 h-3.5" />
+                <RotateCcw className="w-3.5 h-3.5 shrink-0" />
                 <span>Reset All Settings</span>
               </button>
+
+              {/* Export Setting (Up Arrow) & Import Setting (Down Arrow) right after Reset All Settings */}
+              <div className="inline-flex items-center gap-2 pl-2 border-l border-slate-300">
+                <button
+                  type="button"
+                  onClick={handleExportSettingsTxt}
+                  className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border border-blue-300 bg-blue-50 hover:bg-blue-100 text-blue-700 text-xs font-semibold transition cursor-pointer"
+                  title="Export all editable settings to a .txt file"
+                  aria-label="Export Setting"
+                >
+                  <ArrowUp className="w-3.5 h-3.5 shrink-0" />
+                  <span>Export Setting</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => settingsTxtInputRef.current?.click()}
+                  className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border border-emerald-300 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-xs font-semibold transition cursor-pointer"
+                  title="Import and apply all settings in one step from a .txt file"
+                  aria-label="Import Setting"
+                >
+                  <ArrowDown className="w-3.5 h-3.5 shrink-0" />
+                  <span>Import Setting</span>
+                </button>
+
+                <input
+                  ref={settingsTxtInputRef}
+                  type="file"
+                  accept=".txt,.json,text/plain,application/json"
+                  onChange={handleImportSettingsTxt}
+                  className="hidden"
+                />
+              </div>
             </div>
 
             <button
