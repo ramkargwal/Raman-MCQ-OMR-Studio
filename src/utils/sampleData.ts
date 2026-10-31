@@ -222,12 +222,5 @@ export function generateRamRaman100QuestionsText(): string {
   // Purely randomize all 100 questions AND purely shuffle all 4 options of every question
   const randomized = randomizeQuestionsAndOptions(all100Raw);
 
-  return randomized
-    .map((q) => {
-      const opts = q.o.map((opt) => `"${opt}"`).join(', ');
-      return `{ q: "${q.q}", o: [${opts}], a: ${q.a} },`;
-    })
-    .join('\n');
+  return serializeSample(randomized);
 }
-
-

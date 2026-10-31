@@ -87,7 +87,12 @@ export function parseQuizInput(rawInput: string): ParseResult {
     const lines = text.split('\n');
     for (const line of lines) {
       const trimmed = line.trim();
-      if (!trimmed || !trimmed.includes('q:') && !trimmed.includes('"q":')) continue;
+      if (
+        !trimmed ||
+        (!trimmed.includes('q:') && !trimmed.includes('"q":') && !trimmed.includes("'q':"))
+      ) {
+        continue;
+      }
       const qObj = parseSingleObjectBlock(trimmed, idCounter);
       if (qObj) {
         questions.push(qObj);

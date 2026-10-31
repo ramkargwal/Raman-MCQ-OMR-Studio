@@ -9,20 +9,6 @@
   }
 }
 
-/* Central Vertical Divider Line for 2-Column Exam Booklet Layout */
-.exam-two-columns {
-  column-count: 1;
-  column-gap: 1.75rem;
-}
-
-@media (min-width: 768px) {
-  .exam-two-columns {
-    column-count: 2;
-    column-gap: 1.75rem;
-    column-rule: 1.5px solid #1e1b4b;
-  }
-}
-
 /* Ensure aesthetic page boundaries stay closed on all 4 sides across page breaks */
 .page-frame-clone {
   -webkit-box-decoration-break: clone;
@@ -55,19 +41,11 @@
     print-color-adjust: exact !important;
   }
 
-  .exam-two-columns {
-    column-count: 2 !important;
-    column-gap: 1.25rem !important;
-    column-rule: 1.5px solid #1e1b4b !important;
-  }
-
   /* Hide all app chrome, headers, controls, sidebars */
   .no-print,
   nav,
   header,
-  aside,
-  button.no-print,
-  .print-hidden {
+  aside {
     display: none !important;
   }
 
@@ -147,24 +125,6 @@
   .border-black {
     border-color: #000000 !important;
   }
-}
-
-/* OMR Bubble styling */
-.omr-bubble {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 9999px;
-  font-weight: 700;
-  border: 1.5px solid #1e1b4b;
-  user-select: none;
-  transition: all 0.15s ease;
-}
-
-.omr-bubble.filled {
-  background-color: #0f172a !important;
-  color: #ffffff !important;
-  border-color: #0f172a !important;
 }
 
 /* KaTeX custom sizing and inline alignment adjustments */

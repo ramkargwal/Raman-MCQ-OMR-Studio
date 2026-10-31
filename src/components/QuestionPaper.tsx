@@ -152,7 +152,7 @@ export const QuestionPaper: React.FC<QuestionPaperProps> = ({
 
   const renderQuestionItem = (question: QuizQuestion) => {
     const visibleLengths = question.o.map(estimateVisibleLength);
-    const maxOptLen = Math.max(...visibleLengths);
+    const maxOptLen = Math.max(...visibleLengths, 1);
 
     const optionGridClass = metadata.twoColumnLayout
       ? maxOptLen <= 26

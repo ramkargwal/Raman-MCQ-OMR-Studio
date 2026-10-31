@@ -127,15 +127,6 @@ export interface QuizMetadata {
   omrPageFooterText?: string;
 }
 
-export interface PromptConfig {
-  topic: string;
-  questionCount: number;
-  difficulty: 'Easy' | 'Medium' | 'Hard' | 'Advanced (JEE/NEET)';
-  language: 'Hindi' | 'Hinglish' | 'English' | 'Bilingual (Hindi + English)';
-  subject: string;
-  additionalNotes: string;
-}
-
 export type PrintTarget = 'full' | 'student_pack' | 'omr_only' | 'paper_only' | 'key_only';
 
 export interface SavedExam {
@@ -145,4 +136,113 @@ export interface SavedExam {
   questionCount: number;
   inputText: string;
   metadata: QuizMetadata;
+}
+
+export const DEFAULT_OMR_CUSTOMIZATIONS: Partial<QuizMetadata> = {
+  logoStyle: 'science',
+  customLogoUrl: '',
+  logoMonogramText: 'RRVV',
+  omrShowLeftLogo: true,
+  omrShowRightLogo: true,
+  omrRightLogoSameAsLeft: true,
+  omrRightCustomLogoUrl: '',
+  omrBadgePrefix: 'OMR',
+  omrTopBarTitle: 'OPTICAL MARK RECOGNITION ANSWER SHEET • ओएमआर उत्तर पत्रक',
+  omrSlogan: '॥ विद्या ददाति विनयम् ॥',
+  omrShowBarcode: true,
+  omrFormCode: 'FORM: A4-STD',
+  omrTimeLabel: 'TIME / समय',
+  omrDateLabel: 'DATE / तारीख',
+  omrQuestionsLabel: 'QUESTIONS / कुल प्रश्न',
+  omrMaxMarksLabel: 'MAX MARKS / पूर्णांक',
+  omrNegativeLabel: 'NEGATIVE / ऋणात्मक',
+  omrNegativeCustomText: '',
+  omrCandidateNameLabel: '1. Candidate Name / अभ्यर्थी का नाम (In Block Letters)',
+  omrCandidateNameBoxes: 16,
+  omrShowFatherName: true,
+  omrFatherNameLabel: "2. Father's / Guardian's Name / पिता या अभिभावक का नाम",
+  omrFatherNameBoxes: 16,
+  omrSubjectClassLabel: 'Subject & Class / विषय एवं कक्षा:',
+  omrExamCenterLabel: 'Exam Center / परीक्षा केंद्र:',
+  omrExamCenterDefaultValue: '',
+  omrRollNoLabel: '3. Roll Number / अनुक्रमांक (8 Digits)',
+  omrRollNoDigits: 8,
+  omrBookletNoLabel: '4. Question Booklet No. / प्रश्न पुस्तिका संख्या',
+  omrBookletNoDigits: 6,
+  omrCenterCodeLabel: 'Center Code / केंद्र कोड:',
+  omrCenterCodeDigits: 4,
+  omrRoomNoLabel: 'Room No. / कक्ष सं.:',
+  omrRoomNoDigits: 3,
+  omrBookletSeriesLabel: '5. Booklet Series / श्रृंखला',
+  omrBookletSeriesOptions: 'A, B, C, D',
+  omrShiftLabel: '6. Shift / पाली',
+  omrShiftOptions: 'I, II',
+  omrSeriesFooterNote: 'Darken Correct Set & Shift Circle',
+  omrShowInstructionsBar: true,
+  omrInstructionBadge: 'महत्वपूर्ण निर्देश / MARKING INSTRUCTIONS',
+  omrInstructionHeadline:
+    'केवल काले या नीले बॉल पेन (Black/Blue Ball Point Pen) से गोले को पूर्णतः गहरा भरें।',
+  omrInstructionSubtext:
+    '• पहले स्तंभ (Column 1: Q.01–20) को पूरा भरने के बाद ही अगले स्तंभ पर जाएं। • एक से अधिक गोले भरने या काट-छांट करने पर उत्तर अमान्य होगा।',
+  omrWrongLabel: 'गलत / Wrong:',
+  omrCorrectLabel: 'सही / Correct:',
+  omrResponseHeaderTitle: '▼ RESPONSE SHEET / उत्तर प्रभाग',
+  omrOptionStyle: 'ABCD',
+  omrRoughWorkTitle: '✎ SPACE FOR ROUGH WORK / रफ कार्य हेतु स्थान',
+  omrRoughWorkSubtitle:
+    'Candidate Calculation & Scratchpad Area • अभ्यर्थी गणना एवं रफ कार्य क्षेत्र',
+  omrRoughWorkFooterNote: 'Do not make any stray marks on the OMR response circles.',
+  omrShowEvaluationTable: true,
+  omrEvalTotalLabel: 'Total Questions',
+  omrEvalAttemptedLabel: 'Attempted / हल किए',
+  omrEvalBlankLabel: 'Left Blank / छोड़े गए',
+  omrEvalCorrectLabel: 'Correct (+)',
+  omrEvalWrongLabel: 'Wrong (-)',
+  omrEvalNetScoreLabel: 'Net Score / प्राप्तांक',
+  omrDeclarationTitle: 'घोषणा / Declaration:',
+  omrDeclarationText:
+    'मैं प्रमाणित करता/करती हूँ कि मैंने ऊपर अपना अनुक्रमांक एवं प्रश्न पुस्तिका श्रृंखला सही-सही अंकित की है।',
+  omrCandidateSignLabel: "Candidate's Signature / अभ्यर्थी के हस्ताक्षर",
+  omrCandidateSignSubtext: '(In Running Hand)',
+  omrVerificationTitle: 'सत्यापन / Verification:',
+  omrVerificationText:
+    'अभ्यर्थी के अनुक्रमांक, नाम एवं पुस्तिका कोड का मिलान कर सत्यापित किया गया।',
+  omrInvigilatorSignLabel: "Invigilator's Signature / कक्ष निरीक्षक",
+  omrInvigilatorSignSubtext: '(With Date)',
+  omrSuperintendentLabel: 'Center Superintendent / केंद्राधीक्षक',
+  omrStampSpaceLabel: '[ Stamp & Seal Space ]',
+  omrOfficialSealLabel: 'Official Seal / आधिकारिक मुहर',
+  omrPageFooterText: 'PAGE 01 • OMR ANSWER SHEET',
+};
+
+export function createDefaultMetadata(): QuizMetadata {
+  return {
+    instituteName: 'राम रमन विज्ञान विश्वविद्यालय',
+    examTitle: 'वार्षिक बहुविकल्पीय परीक्षा (MCQ Assessment)',
+    subject: 'विज्ञान एवं गणित (Science & Mathematics)',
+    classGrade: 'विश्वविद्यालय स्नातक / प्रवेश परीक्षा',
+    testCode: 'RRVV/SET-A',
+    date: new Date().toLocaleDateString('hi-IN', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    }),
+    timeLimit: '120 मिनट (2 Hours)',
+    maxMarks: 100,
+    marksPerQuestion: 1,
+    negativeMarking: 0,
+    instructions: [
+      'सभी प्रश्न अनिवार्य हैं। प्रत्येक प्रश्न के 4 विकल्प (A, B, C, D) में से सही उत्तर चुनकर OMR शीट में नीले/काले बॉल पेन से गोला भरें।',
+    ],
+    watermarkText: 'राम रमन विज्ञान विश्वविद्यालय',
+    showWatermark: false,
+    twoColumnLayout: true,
+    fontSize: 'relaxed',
+    answerKeyFontSize: 'large',
+    includeOmr: true,
+    includeQuestions: true,
+    includeAnswerKey: true,
+    omrCapacity: 0,
+    ...DEFAULT_OMR_CUSTOMIZATIONS,
+  };
 }

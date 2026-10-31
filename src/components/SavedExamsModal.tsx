@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   X,
   Save,
@@ -45,12 +45,32 @@ export const SavedExamsModal: React.FC<SavedExamsModalProps> = ({
   );
   const [statusMsg, setStatusMsg] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const toastTimerRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    if (isOpen) {
+      setSaveTitle(
+        `${currentMetadata.examTitle || 'Exam Paper'} (${currentMetadata.testCode || 'SET-A'})`
+      );
+    }
+  }, [isOpen, currentMetadata.examTitle, currentMetadata.testCode]);
+
+  useEffect(() => {
+    return () => {
+      if (toastTimerRef.current) {
+        window.clearTimeout(toastTimerRef.current);
+      }
+    };
+  }, []);
 
   if (!isOpen) return null;
 
   const showToast = (msg: string) => {
     setStatusMsg(msg);
-    setTimeout(() => setStatusMsg(null), 2500);
+    if (toastTimerRef.current) {
+      window.clearTimeout(toastTimerRef.current);
+    }
+    toastTimerRef.current = window.setTimeout(() => setStatusMsg(null), 2500);
   };
 
   const handleSave = (e: React.FormEvent) => {
@@ -58,6 +78,17 @@ export const SavedExamsModal: React.FC<SavedExamsModalProps> = ({
     const trimmed = saveTitle.trim() || 'राम रमन विश्वविद्यालय परीक्षा पत्र';
     onSaveExam(trimmed);
     showToast(`Saved "${trimmed}" to browser storage!`);
+  };
+
+  const triggerDownload = (blob: Blob, filename: string) => {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   };
 
   // Export full exam pack (.json) with metadata + questions
@@ -71,15 +102,10 @@ export const SavedExamsModal: React.FC<SavedExamsModalProps> = ({
     const blob = new Blob([JSON.stringify(payload, null, 2)], {
       type: 'application/json;charset=utf-8',
     });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
     const safeName = (currentMetadata.testCode || 'exam-paper')
       .replace(/[^a-zA-Z0-9_-]/g, '_')
       .toLowerCase();
-    a.href = url;
-    a.download = `${safeName}_full_exam.json`;
-    a.click();
-    URL.revokeObjectURL(url);
+    triggerDownload(blob, `${safeName}_full_exam.json`);
     showToast('Exported Full Exam (.json) file!');
   };
 
@@ -88,15 +114,10 @@ export const SavedExamsModal: React.FC<SavedExamsModalProps> = ({
     const blob = new Blob([currentInputText], {
       type: 'text/plain;charset=utf-8',
     });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
     const safeName = (currentMetadata.testCode || 'questions')
       .replace(/[^a-zA-Z0-9_-]/g, '_')
       .toLowerCase();
-    a.href = url;
-    a.download = `${safeName}_questions.txt`;
-    a.click();
-    URL.revokeObjectURL(url);
+    triggerDownload(blob, `${safeName}_questions.txt`);
     showToast('Exported Questions (.txt) file!');
   };
 

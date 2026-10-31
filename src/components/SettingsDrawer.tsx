@@ -1,5 +1,12 @@
-import React, { useState, useRef } from 'react';
-import { QuizMetadata, LogoPresetStyle, OmrOptionStyle, PrintTarget } from '../types/quiz';
+import React, { useState, useRef, useEffect } from 'react';
+import {
+  QuizMetadata,
+  LogoPresetStyle,
+  OmrOptionStyle,
+  PrintTarget,
+  DEFAULT_OMR_CUSTOMIZATIONS,
+  createDefaultMetadata,
+} from '../types/quiz';
 import { UniversityCrest } from './UniversityCrest';
 import {
   X,
@@ -57,6 +64,15 @@ export const SettingsDrawer: React.FC<SettingsDrawerProps> = ({
   const logoFileInputRef = useRef<HTMLInputElement | null>(null);
   const rightLogoFileInputRef = useRef<HTMLInputElement | null>(null);
   const settingsTxtInputRef = useRef<HTMLInputElement | null>(null);
+  const statusTimerRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (statusTimerRef.current) {
+        window.clearTimeout(statusTimerRef.current);
+      }
+    };
+  }, []);
 
   if (!isOpen) return null;
 
@@ -117,80 +133,7 @@ export const SettingsDrawer: React.FC<SettingsDrawerProps> = ({
   const handleResetOmrCustomizations = () => {
     onChange({
       ...metadata,
-      logoStyle: 'science',
-      customLogoUrl: '',
-      logoMonogramText: 'RRVV',
-      omrShowLeftLogo: true,
-      omrShowRightLogo: true,
-      omrRightLogoSameAsLeft: true,
-      omrRightCustomLogoUrl: '',
-      omrBadgePrefix: 'OMR',
-      omrTopBarTitle: 'OPTICAL MARK RECOGNITION ANSWER SHEET • ओएमआर उत्तर पत्रक',
-      omrSlogan: '॥ विद्या ददाति विनयम् ॥',
-      omrShowBarcode: true,
-      omrFormCode: 'FORM: A4-STD',
-      omrTimeLabel: 'TIME / समय',
-      omrDateLabel: 'DATE / तारीख',
-      omrQuestionsLabel: 'QUESTIONS / कुल प्रश्न',
-      omrMaxMarksLabel: 'MAX MARKS / पूर्णांक',
-      omrNegativeLabel: 'NEGATIVE / ऋणात्मक',
-      omrNegativeCustomText: '',
-      omrCandidateNameLabel: '1. Candidate Name / अभ्यर्थी का नाम (In Block Letters)',
-      omrCandidateNameBoxes: 16,
-      omrShowFatherName: true,
-      omrFatherNameLabel: "2. Father's / Guardian's Name / पिता या अभिभावक का नाम",
-      omrFatherNameBoxes: 16,
-      omrSubjectClassLabel: 'Subject & Class / विषय एवं कक्षा:',
-      omrExamCenterLabel: 'Exam Center / परीक्षा केंद्र:',
-      omrExamCenterDefaultValue: '',
-      omrRollNoLabel: '3. Roll Number / अनुक्रमांक (8 Digits)',
-      omrRollNoDigits: 8,
-      omrBookletNoLabel: '4. Question Booklet No. / प्रश्न पुस्तिका संख्या',
-      omrBookletNoDigits: 6,
-      omrCenterCodeLabel: 'Center Code / केंद्र कोड:',
-      omrCenterCodeDigits: 4,
-      omrRoomNoLabel: 'Room No. / कक्ष सं.:',
-      omrRoomNoDigits: 3,
-      omrBookletSeriesLabel: '5. Booklet Series / श्रृंखला',
-      omrBookletSeriesOptions: 'A, B, C, D',
-      omrShiftLabel: '6. Shift / पाली',
-      omrShiftOptions: 'I, II',
-      omrSeriesFooterNote: 'Darken Correct Set & Shift Circle',
-      omrShowInstructionsBar: true,
-      omrInstructionBadge: 'महत्वपूर्ण निर्देश / MARKING INSTRUCTIONS',
-      omrInstructionHeadline:
-        'केवल काले या नीले बॉल पेन (Black/Blue Ball Point Pen) से गोले को पूर्णतः गहरा भरें।',
-      omrInstructionSubtext:
-        '• पहले स्तंभ (Column 1: Q.01–20) को पूरा भरने के बाद ही अगले स्तंभ पर जाएं। • एक से अधिक गोले भरने या काट-छांट करने पर उत्तर अमान्य होगा।',
-      omrWrongLabel: 'गलत / Wrong:',
-      omrCorrectLabel: 'सही / Correct:',
-      omrResponseHeaderTitle: '▼ RESPONSE SHEET / उत्तर प्रभाग',
-      omrOptionStyle: 'ABCD',
-      omrRoughWorkTitle: '✎ SPACE FOR ROUGH WORK / रफ कार्य हेतु स्थान',
-      omrRoughWorkSubtitle:
-        'Candidate Calculation & Scratchpad Area • अभ्यर्थी गणना एवं रफ कार्य क्षेत्र',
-      omrRoughWorkFooterNote: 'Do not make any stray marks on the OMR response circles.',
-      omrShowEvaluationTable: true,
-      omrEvalTotalLabel: 'Total Questions',
-      omrEvalAttemptedLabel: 'Attempted / हल किए',
-      omrEvalBlankLabel: 'Left Blank / छोड़े गए',
-      omrEvalCorrectLabel: 'Correct (+)',
-      omrEvalWrongLabel: 'Wrong (-)',
-      omrEvalNetScoreLabel: 'Net Score / प्राप्तांक',
-      omrDeclarationTitle: 'घोषणा / Declaration:',
-      omrDeclarationText:
-        'मैं प्रमाणित करता/करती हूँ कि मैंने ऊपर अपना अनुक्रमांक एवं प्रश्न पुस्तिका श्रृंखला सही-सही अंकित की है।',
-      omrCandidateSignLabel: "Candidate's Signature / अभ्यर्थी के हस्ताक्षर",
-      omrCandidateSignSubtext: '(In Running Hand)',
-      omrVerificationTitle: 'सत्यापन / Verification:',
-      omrVerificationText:
-        'अभ्यर्थी के अनुक्रमांक, नाम एवं पुस्तिका कोड का मिलान कर सत्यापित किया गया।',
-      omrInvigilatorSignLabel: "Invigilator's Signature / कक्ष निरीक्षक",
-      omrInvigilatorSignSubtext: '(With Date)',
-      omrSuperintendentLabel: 'Center Superintendent / केंद्राधीक्षक',
-      omrStampSpaceLabel: '[ Stamp & Seal Space ]',
-      omrOfficialSealLabel: 'Official Seal / आधिकारिक मुहर',
-      omrPageFooterText: 'PAGE 01 • OMR ANSWER SHEET',
+      ...DEFAULT_OMR_CUSTOMIZATIONS,
     });
   };
 
@@ -199,34 +142,7 @@ export const SettingsDrawer: React.FC<SettingsDrawerProps> = ({
       onResetAllSettings();
       return;
     }
-    onChange({
-      instituteName: 'राम रमन विज्ञान विश्वविद्यालय',
-      examTitle: 'वार्षिक बहुविकल्पीय परीक्षा (MCQ Assessment)',
-      subject: 'विज्ञान एवं गणित (Science & Mathematics)',
-      classGrade: 'विश्वविद्यालय स्नातक / प्रवेश परीक्षा',
-      testCode: 'RRVV/SET-A',
-      date: new Date().toLocaleDateString('hi-IN', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-      }),
-      timeLimit: '120 मिनट (2 Hours)',
-      maxMarks: 100,
-      marksPerQuestion: 1,
-      negativeMarking: 0,
-      instructions: [
-        'सभी प्रश्न अनिवार्य हैं। प्रत्येक प्रश्न के 4 विकल्प (A, B, C, D) में से सही उत्तर चुनकर OMR शीट में नीले/काले बॉल पेन से गोला भरें।',
-      ],
-      watermarkText: 'राम रमन विज्ञान विश्वविद्यालय',
-      showWatermark: false,
-      twoColumnLayout: true,
-      fontSize: 'relaxed',
-      answerKeyFontSize: 'large',
-      includeOmr: true,
-      includeQuestions: true,
-      includeAnswerKey: true,
-      omrCapacity: 0,
-    });
+    onChange(createDefaultMetadata());
   };
 
   const showStatusFeedback = (type: 'success' | 'error', text: string) => {
@@ -234,171 +150,46 @@ export const SettingsDrawer: React.FC<SettingsDrawerProps> = ({
     if (onNotify) {
       onNotify(text);
     }
-    window.setTimeout(() => {
+    if (statusTimerRef.current) {
+      window.clearTimeout(statusTimerRef.current);
+    }
+    statusTimerRef.current = window.setTimeout(() => {
       setSettingsStatusMsg((prev) => (prev?.text === text ? null : prev));
     }, 4000);
   };
 
-  const buildCompleteMetadata = (current: QuizMetadata): QuizMetadata => ({
-    // 1. Header, School Info & Exam Metadata
-    instituteName: current.instituteName ?? 'राम रमन विज्ञान विश्वविद्यालय',
-    examTitle: current.examTitle ?? 'वार्षिक बहुविकल्पीय परीक्षा (MCQ Assessment)',
-    subject: current.subject ?? 'विज्ञान एवं गणित (Science & Mathematics)',
-    classGrade: current.classGrade ?? 'विश्वविद्यालय स्नातक / प्रवेश परीक्षा',
-    testCode: current.testCode ?? 'RRVV/SET-A',
-    date:
-      current.date ??
-      new Date().toLocaleDateString('hi-IN', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-      }),
-    timeLimit: current.timeLimit ?? '120 मिनट (2 Hours)',
-    maxMarks: current.maxMarks ?? 100,
-    marksPerQuestion: current.marksPerQuestion ?? 1,
-    negativeMarking: current.negativeMarking ?? 0,
-    omrNegativeCustomText: current.omrNegativeCustomText ?? '',
+  const buildCompleteMetadata = (current: QuizMetadata): QuizMetadata => {
+    const defaults = createDefaultMetadata();
+    const merged: QuizMetadata = { ...defaults };
 
-    // 2. Logo & Emblem Settings
-    logoStyle: current.logoStyle ?? 'science',
-    customLogoUrl: current.customLogoUrl ?? '',
-    logoMonogramText: current.logoMonogramText ?? 'RRVV',
-    omrShowLeftLogo: current.omrShowLeftLogo !== false,
-    omrShowRightLogo: current.omrShowRightLogo !== false,
-    omrRightLogoSameAsLeft: current.omrRightLogoSameAsLeft !== false,
-    omrRightCustomLogoUrl: current.omrRightCustomLogoUrl ?? '',
+    (Object.keys(defaults) as Array<keyof QuizMetadata>).forEach((key) => {
+      if (current[key] !== undefined && current[key] !== null) {
+        (merged as unknown as Record<string, unknown>)[key] = current[key];
+      }
+    });
 
-    // 3. Top Crown Bar & Slogan
-    omrSlogan: current.omrSlogan ?? '॥ विद्या ददाति विनयम् ॥',
-    omrBadgePrefix: current.omrBadgePrefix ?? 'OMR',
-    omrFormCode: current.omrFormCode ?? 'FORM: A4-STD',
-    omrTopBarTitle:
-      current.omrTopBarTitle ??
-      'OPTICAL MARK RECOGNITION ANSWER SHEET • ओएमआर उत्तर पत्रक',
-    omrShowBarcode: current.omrShowBarcode !== false,
-
-    // 4. 5-Cell Metadata Ribbon Headings
-    omrTimeLabel: current.omrTimeLabel ?? 'TIME / समय',
-    omrDateLabel: current.omrDateLabel ?? 'DATE / तारीख',
-    omrQuestionsLabel: current.omrQuestionsLabel ?? 'QUESTIONS / कुल प्रश्न',
-    omrMaxMarksLabel: current.omrMaxMarksLabel ?? 'MAX MARKS / पूर्णांक',
-    omrNegativeLabel: current.omrNegativeLabel ?? 'NEGATIVE / ऋणात्मक',
-
-    // 5. Candidate Boxes, Roll No, Booklet & Series
-    omrCandidateNameLabel:
-      current.omrCandidateNameLabel ??
-      '1. Candidate Name / अभ्यर्थी का नाम (In Block Letters)',
-    omrCandidateNameBoxes: current.omrCandidateNameBoxes ?? 16,
-    omrShowFatherName: current.omrShowFatherName !== false,
-    omrFatherNameLabel:
-      current.omrFatherNameLabel ??
-      "2. Father's / Guardian's Name / पिता या अभिभावक का नाम",
-    omrFatherNameBoxes: current.omrFatherNameBoxes ?? 16,
-    omrSubjectClassLabel:
-      current.omrSubjectClassLabel ?? 'Subject & Class / विषय एवं कक्षा:',
-    omrExamCenterLabel:
-      current.omrExamCenterLabel ?? 'Exam Center / परीक्षा केंद्र:',
-    omrExamCenterDefaultValue: current.omrExamCenterDefaultValue ?? '',
-    omrRollNoLabel:
-      current.omrRollNoLabel ??
-      `3. Roll Number / अनुक्रमांक (${current.omrRollNoDigits || 8} Digits)`,
-    omrRollNoDigits: current.omrRollNoDigits ?? 8,
-    omrBookletNoLabel:
-      current.omrBookletNoLabel ??
-      '4. Question Booklet No. / प्रश्न पुस्तिका संख्या',
-    omrBookletNoDigits: current.omrBookletNoDigits ?? 6,
-    omrCenterCodeLabel:
-      current.omrCenterCodeLabel ?? 'Center Code / केंद्र कोड:',
-    omrCenterCodeDigits: current.omrCenterCodeDigits ?? 4,
-    omrRoomNoLabel: current.omrRoomNoLabel ?? 'Room No. / कक्ष सं.:',
-    omrRoomNoDigits: current.omrRoomNoDigits ?? 3,
-    omrBookletSeriesLabel:
-      current.omrBookletSeriesLabel ?? '5. Booklet Series / श्रृंखला',
-    omrBookletSeriesOptions: current.omrBookletSeriesOptions ?? 'A, B, C, D',
-    omrShiftLabel: current.omrShiftLabel ?? '6. Shift / पाली',
-    omrShiftOptions: current.omrShiftOptions ?? 'I, II',
-    omrSeriesFooterNote:
-      current.omrSeriesFooterNote ?? 'Darken Correct Set & Shift Circle',
-
-    // 6. OMR Bubbles, Capacity, Instructions Bar & Rough Work
-    omrCapacity: current.omrCapacity ?? 0,
-    omrOptionStyle: current.omrOptionStyle ?? 'ABCD',
-    omrResponseHeaderTitle:
-      current.omrResponseHeaderTitle ?? '▼ RESPONSE SHEET / उत्तर प्रभाग',
-    omrShowInstructionsBar: current.omrShowInstructionsBar !== false,
-    omrInstructionBadge:
-      current.omrInstructionBadge ??
-      'महत्वपूर्ण निर्देश / MARKING INSTRUCTIONS',
-    omrInstructionHeadline:
-      current.omrInstructionHeadline ??
-      'केवल काले या नीले बॉल पेन (Black/Blue Ball Point Pen) से गोले को पूर्णतः गहरा भरें।',
-    omrInstructionSubtext:
-      current.omrInstructionSubtext ??
-      '• पहले स्तंभ (Column 1: Q.01–20) को पूरा भरने के बाद ही अगले स्तंभ पर जाएं। • एक से अधिक गोले भरने या काट-छांट करने पर उत्तर अमान्य होगा।',
-    omrWrongLabel: current.omrWrongLabel ?? 'गलत / Wrong:',
-    omrCorrectLabel: current.omrCorrectLabel ?? 'सही / Correct:',
-    omrRoughWorkTitle:
-      current.omrRoughWorkTitle ??
-      '✎ SPACE FOR ROUGH WORK / रफ कार्य हेतु स्थान',
-    omrRoughWorkSubtitle:
-      current.omrRoughWorkSubtitle ??
-      'Candidate Calculation & Scratchpad Area • अभ्यर्थी गणना एवं रफ कार्य क्षेत्र',
-    omrRoughWorkFooterNote:
-      current.omrRoughWorkFooterNote ??
-      'Do not make any stray marks on the OMR response circles.',
-
-    // 7. Evaluation Table, Declarations, Signatures & Footer
-    omrShowEvaluationTable: current.omrShowEvaluationTable !== false,
-    omrEvalTotalLabel: current.omrEvalTotalLabel ?? 'Total Questions',
-    omrEvalAttemptedLabel: current.omrEvalAttemptedLabel ?? 'Attempted / हल किए',
-    omrEvalBlankLabel: current.omrEvalBlankLabel ?? 'Left Blank / छोड़े गए',
-    omrEvalCorrectLabel: current.omrEvalCorrectLabel ?? 'Correct (+)',
-    omrEvalWrongLabel: current.omrEvalWrongLabel ?? 'Wrong (-)',
-    omrEvalNetScoreLabel: current.omrEvalNetScoreLabel ?? 'Net Score / प्राप्तांक',
-    omrDeclarationTitle: current.omrDeclarationTitle ?? 'घोषणा / Declaration:',
-    omrDeclarationText:
-      current.omrDeclarationText ??
-      'मैं प्रमाणित करता/करती हूँ कि मैंने ऊपर अपना अनुक्रमांक एवं प्रश्न पुस्तिका श्रृंखला सही-सही अंकित की है।',
-    omrCandidateSignLabel:
-      current.omrCandidateSignLabel ??
-      "Candidate's Signature / अभ्यर्थी के हस्ताक्षर",
-    omrCandidateSignSubtext:
-      current.omrCandidateSignSubtext ?? '(In Running Hand)',
-    omrVerificationTitle:
-      current.omrVerificationTitle ?? 'सत्यापन / Verification:',
-    omrVerificationText:
-      current.omrVerificationText ??
-      'अभ्यर्थी के अनुक्रमांक, नाम एवं पुस्तिका कोड का मिलान कर सत्यापित किया गया।',
-    omrInvigilatorSignLabel:
-      current.omrInvigilatorSignLabel ??
-      "Invigilator's Signature / कक्ष निरीक्षक",
-    omrInvigilatorSignSubtext:
-      current.omrInvigilatorSignSubtext ?? '(With Date)',
-    omrSuperintendentLabel:
-      current.omrSuperintendentLabel ?? 'Center Superintendent / केंद्राधीक्षक',
-    omrStampSpaceLabel:
-      current.omrStampSpaceLabel ?? '[ Stamp & Seal Space ]',
-    omrOfficialSealLabel:
-      current.omrOfficialSealLabel ?? 'Official Seal / आधिकारिक मुहर',
-    omrPageFooterText:
-      current.omrPageFooterText ?? 'PAGE 01 • OMR ANSWER SHEET',
-
-    // 8. Question Paper Layout, Watermark, Included Pages & Instructions
-    twoColumnLayout: current.twoColumnLayout !== false,
-    fontSize: current.fontSize ?? 'relaxed',
-    answerKeyFontSize: current.answerKeyFontSize ?? 'large',
-    showWatermark: Boolean(current.showWatermark),
-    watermarkText: current.watermarkText ?? 'राम रमन विज्ञान विश्वविद्यालय',
-    includeOmr: current.includeOmr !== false,
-    includeQuestions: current.includeQuestions !== false,
-    includeAnswerKey: current.includeAnswerKey !== false,
-    instructions:
+    if (!current.omrRollNoLabel) {
+      merged.omrRollNoLabel = `3. Roll Number / अनुक्रमांक (${merged.omrRollNoDigits || 8} Digits)`;
+    }
+    merged.omrShowLeftLogo = current.omrShowLeftLogo !== false;
+    merged.omrShowRightLogo = current.omrShowRightLogo !== false;
+    merged.omrRightLogoSameAsLeft = current.omrRightLogoSameAsLeft !== false;
+    merged.omrShowBarcode = current.omrShowBarcode !== false;
+    merged.omrShowFatherName = current.omrShowFatherName !== false;
+    merged.omrShowInstructionsBar = current.omrShowInstructionsBar !== false;
+    merged.omrShowEvaluationTable = current.omrShowEvaluationTable !== false;
+    merged.twoColumnLayout = current.twoColumnLayout !== false;
+    merged.showWatermark = Boolean(current.showWatermark);
+    merged.includeOmr = current.includeOmr !== false;
+    merged.includeQuestions = current.includeQuestions !== false;
+    merged.includeAnswerKey = current.includeAnswerKey !== false;
+    merged.instructions =
       Array.isArray(current.instructions) && current.instructions.length > 0
         ? current.instructions
-        : [
-            'सभी प्रश्न अनिवार्य हैं। प्रत्येक प्रश्न के 4 विकल्प (A, B, C, D) में से सही उत्तर चुनकर OMR शीट में नीले/काले बॉल पेन से गोला भरें।',
-          ],
-  });
+        : defaults.instructions;
+
+    return merged;
+  };
 
   const handleExportSettingsTxt = () => {
     const completeMetadata = buildCompleteMetadata(metadata);

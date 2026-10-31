@@ -1,19 +1,15 @@
-import React, { useState } from 'react';
-import { Copy, Check, Sparkles, X, FileText, Settings2, Sliders } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { Copy, Check, Sparkles, X, FileText, Sliders } from 'lucide-react';
 import { buildPromptText } from '../utils/sampleData';
 
 interface PromptModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onGenerateAI?: (topic: string, count: number, lang: string, diff: string) => void;
-  isGeneratingAI?: boolean;
 }
 
 export const PromptModal: React.FC<PromptModalProps> = ({
   isOpen,
   onClose,
-  onGenerateAI,
-  isGeneratingAI = false,
 }) => {
   const [topic, setTopic] = useState('');
   const [questionCount, setQuestionCount] = useState(50);
@@ -24,6 +20,15 @@ export const PromptModal: React.FC<PromptModalProps> = ({
   const [additionalNotes, setAdditionalNotes] = useState('');
   const [customPrompt, setCustomPrompt] = useState('');
   const [copied, setCopied] = useState(false);
+  const copyTimerRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (copyTimerRef.current) {
+        window.clearTimeout(copyTimerRef.current);
+      }
+    };
+  }, []);
 
   if (!isOpen) return null;
 
@@ -37,12 +42,19 @@ export const PromptModal: React.FC<PromptModalProps> = ({
       )
     : customPrompt;
 
+  const markCopied = () => {
+    setCopied(true);
+    if (copyTimerRef.current) {
+      window.clearTimeout(copyTimerRef.current);
+    }
+    copyTimerRef.current = window.setTimeout(() => setCopied(false), 2500);
+  };
+
   const handleCopy = async () => {
     if (!currentPrompt.trim()) return;
     try {
       await navigator.clipboard.writeText(currentPrompt);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2500);
+      markCopied();
     } catch {
       // Fallback
       const textarea = document.createElement('textarea');
@@ -51,8 +63,7 @@ export const PromptModal: React.FC<PromptModalProps> = ({
       textarea.select();
       document.execCommand('copy');
       document.body.removeChild(textarea);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2500);
+      markCopied();
     }
   };
 
@@ -221,18 +232,6 @@ export const PromptModal: React.FC<PromptModalProps> = ({
           </div>
 
           <div className="flex items-center gap-2">
-            {onGenerateAI && (
-              <button
-                type="button"
-                onClick={() => onGenerateAI(topic, questionCount, language, difficulty)}
-                disabled={isGeneratingAI || !topic.trim()}
-                className="inline-flex items-center gap-1.5 px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg text-xs font-bold hover:from-purple-700 hover:to-indigo-700 transition-all shadow-xs cursor-pointer disabled:opacity-50"
-              >
-                <Sparkles className="w-3.5 h-3.5" />
-                {isGeneratingAI ? 'Generating with Gemini...' : 'Generate with Gemini AI'}
-              </button>
-            )}
-
             <button
               type="button"
               onClick={handleCopy}
