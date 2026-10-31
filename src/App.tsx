@@ -348,20 +348,17 @@ export default function App() {
   const handlePlayQuiz = () => {
     const dataToCopy = inputText.trim();
     if (dataToCopy) {
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(inputText).catch(() => {
-          const textarea = document.getElementById('quiz-input-textarea') as HTMLTextAreaElement | null;
-          if (textarea) {
-            textarea.select();
-            document.execCommand('copy');
-          }
-        });
-      } else {
-        const textarea = document.getElementById('quiz-input-textarea') as HTMLTextAreaElement | null;
-        if (textarea) {
-          textarea.select();
+      const textarea = document.getElementById('quiz-input-textarea') as HTMLTextAreaElement | null;
+      if (textarea) {
+        textarea.select();
+        try {
           document.execCommand('copy');
+        } catch {
+          // Ignore fallback error
         }
+      }
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(inputText).catch(() => {});
       }
       showToast('Quiz data copied to clipboard! Opening Raman Quiz Challenge...');
     } else {
@@ -1131,7 +1128,7 @@ export default function App() {
                 <div className="flex items-center gap-1">
                   {/* Play Quiz Icon Button (Copies all data & opens Raman Quiz Challenge in new tab) */}
                   <a
-                    href="https://ramkargwal.github.io/apps/game/raman_quiz_challenge.html"
+                    href="https://ramkargwal.github.io/Raman-Quiz-Challenge/"
                     target="_blank"
                     rel="noopener noreferrer"
                     onClick={handlePlayQuiz}
