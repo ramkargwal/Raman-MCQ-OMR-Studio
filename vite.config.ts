@@ -5,7 +5,7 @@ import {defineConfig} from 'vite';
 
 export default defineConfig(() => {
   return {
-    base: '/ai_studio/',
+    base: '/Raman-MCQ-OMR-Studio/',
     plugins: [react(), tailwindcss()],
     resolve: {
       alias: {
