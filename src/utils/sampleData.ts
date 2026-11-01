@@ -89,7 +89,7 @@ export const SAMPLE_PHYSICS_CHEM = serializeSample(RAW_PHYSICS_CHEM);
  */
 export function buildPromptText(
   topic = 'भीमबेटका की गुफाएँ',
-  questionCount = 20,
+  questionCount = 50,
   language = 'Hindi',
   difficulty = 'Medium',
   additionalNotes = ''
@@ -120,7 +120,7 @@ export function buildPromptText(
 Your task is to carefully analyze the topic, notes, or study material provided and generate a high-quality multiple-choice quiz.
 
 ### CRITICAL REQUIREMENT 1: Question Quantity, Randomization & Difficulty
-* Question Quantity: Generate EXACTLY ${questionCount} UNIQUE multiple-choice questions.
+* Question Quantity: Generate EXACTLY ${questionCount} UNIQUE multiple-choice questions (do NOT stop at 20 questions and do NOT truncate or use placeholders — output all ${questionCount} questions in full).
 * Randomize Question Order: Mix questions across different subtopics and concepts in random order so similar questions do not cluster together.
 * Difficulty Level: ${difficulty} (Standard conceptual and application-based questions suitable for school/board and competitive exams).
 

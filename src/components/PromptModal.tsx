@@ -12,7 +12,8 @@ export const PromptModal: React.FC<PromptModalProps> = ({
   onClose,
 }) => {
   const [topic, setTopic] = useState('');
-  const [questionCount, setQuestionCount] = useState(50);
+  const [questionCountInput, setQuestionCountInput] = useState('50');
+  const questionCount = Math.max(1, Math.min(500, parseInt(questionCountInput, 10) || 50));
   const [language, setLanguage] = useState<
     'Hindi' | 'Hinglish' | 'English' | 'Bilingual (Hindi + English)'
   >('Hinglish');
@@ -140,9 +141,10 @@ export const PromptModal: React.FC<PromptModalProps> = ({
                   <input
                     type="number"
                     min={1}
-                    max={300}
-                    value={questionCount}
-                    onChange={(e) => setQuestionCount(Math.max(1, Number(e.target.value) || 50))}
+                    max={500}
+                    value={questionCountInput}
+                    onChange={(e) => setQuestionCountInput(e.target.value)}
+                    onBlur={() => setQuestionCountInput(String(questionCount))}
                     className="w-full text-xs px-2.5 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-hidden bg-white"
                   />
                 </div>
